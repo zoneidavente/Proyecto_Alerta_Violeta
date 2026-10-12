@@ -29,6 +29,12 @@ const ReporteSchema = new mongoose.Schema({
         type: String,
     },
 
+    estado: {
+    type: String,
+    enum: ["Pendiente", "En revisión", "Atendido", "Cerrado"],
+    default: "Pendiente",
+    },
+
     fecha: {
         type: Date,
         default: Date.now,

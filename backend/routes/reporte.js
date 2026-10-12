@@ -68,5 +68,38 @@ router.get("/reporte", async (req, res) => {
     }
 });
 
+    // ACTUALIZAR ESTADO DEL REPORTE
+router.put("/reporte/:id/estado", async (req, res) => {
+    try {
+        const reporteActualizado = await Reporte.findByIdAndUpdate(
+            req.params.id,
+            {
+                estado: req.body.estado
+            },
+            { new: true }
+        );
+
+        if (!reporteActualizado) {
+            return res.status(404).json({
+                success: false,
+                message: "Reporte no encontrado"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Estado actualizado",
+            reporte: reporteActualizado
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Error al actualizar el estado"
+        });
+    }
+});
 
 module.exports = router;

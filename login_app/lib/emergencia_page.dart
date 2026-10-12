@@ -8,8 +8,9 @@ import 'package:geolocator/geolocator.dart';
 
 class EmergenciaPage extends StatefulWidget {
   final String alias;
+  final String role;
 
-  EmergenciaPage({required this.alias});
+  EmergenciaPage({required this.alias, required this.role});
   @override
   State<EmergenciaPage> createState() => _EmergenciaPageState();
 }
@@ -76,7 +77,7 @@ class _EmergenciaPageState extends State<EmergenciaPage> {
 
     try {
       var response = await http.post(
-        Uri.parse("http://192.168.0.19:3000/emergencia"),
+        Uri.parse("http://192.168.0.16:3000/emergencia"),
 
         headers: {"Content-Type": "application/json"},
 
@@ -230,32 +231,6 @@ class _EmergenciaPageState extends State<EmergenciaPage> {
             SizedBox(height: 95),
 
             // BOTÓN ALERTA
-            SizedBox(
-              width: 320,
-              height: 70,
-
-              child: ElevatedButton(
-                onPressed: enviarAlertaSOS,
-
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: rojo,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                ),
-
-                child: Text(
-                  "ENVIAR ALERTA",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-              ),
-            ),
-
             Spacer(),
 
             // TEXTO FINAL
@@ -291,19 +266,19 @@ class _EmergenciaPageState extends State<EmergenciaPage> {
 
           switch (index) {
             case 0:
-              page = HomePage(alias: widget.alias);
+              page = HomePage(alias: widget.alias, role: widget.role);
               break;
 
             case 1:
-              page = NotificacionesPage(alias: widget.alias);
+              page = NotificacionesPage(alias: widget.alias, role: widget.role);
               break;
 
             case 2:
-              page = MapaPage(alias: widget.alias);
+              page = MapaPage(alias: widget.alias, role: widget.role);
               break;
 
             default:
-              page = HomePage(alias: widget.alias);
+              page = HomePage(alias: widget.alias, role: widget.role);
           }
 
           Navigator.pushReplacement(

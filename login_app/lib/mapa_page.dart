@@ -10,8 +10,9 @@ import 'notificaciones_page.dart';
 
 class MapaPage extends StatefulWidget {
   final String alias;
+  final String role;
 
-  MapaPage({required this.alias});
+  MapaPage({required this.alias, required this.role});
 
   @override
   State<MapaPage> createState() => _MapaPageState();
@@ -43,7 +44,7 @@ class _MapaPageState extends State<MapaPage> {
   Future<void> obtenerReportes() async {
     try {
       var response = await http.get(
-        Uri.parse("http://192.168.0.19:3000/reporte"),
+        Uri.parse("http://192.168.20.32:3000/reporte"),
       );
 
       if (response.statusCode == 200) {
@@ -364,6 +365,37 @@ class _MapaPageState extends State<MapaPage> {
     );
   }
 
+  Widget _nivelRiesgoItem(String label, Color color, Color backgroundColor) {
+    return Expanded(
+      child: Container(
+        height: 30,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 15,
+              height: 15,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: Color(0xFF292B2E),
+                fontSize: 9,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Color fondo = Color(0xFFF3EDF5);
@@ -494,59 +526,26 @@ class _MapaPageState extends State<MapaPage> {
 
                     SizedBox(height: 80),
 
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 18,
-                      ),
-
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 221, 198, 226),
-
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-
-                        children: [
-                          Text(
-                            "Bajo",
-
-                            style: TextStyle(
-                              color: Colors.green,
-
-                              fontWeight: FontWeight.bold,
-
-                              fontSize: 22,
-                            ),
-                          ),
-
-                          Text(
-                            "Medio",
-
-                            style: TextStyle(
-                              color: Colors.yellow.shade700,
-
-                              fontWeight: FontWeight.bold,
-
-                              fontSize: 22,
-                            ),
-                          ),
-
-                          Text(
-                            "Alto",
-
-                            style: TextStyle(
-                              color: Colors.red,
-
-                              fontWeight: FontWeight.bold,
-
-                              fontSize: 22,
-                            ),
-                          ),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        _nivelRiesgoItem(
+                          "Bajo",
+                          Color(0xFF4DB875),
+                          Color(0xFFE9F7EE),
+                        ),
+                        SizedBox(width: 6),
+                        _nivelRiesgoItem(
+                          "Medio",
+                          Color(0xFFFFB91B),
+                          Color(0xFFFCF6E8),
+                        ),
+                        SizedBox(width: 6),
+                        _nivelRiesgoItem(
+                          "Alto",
+                          Color(0xFFEE4B69),
+                          Color(0xFFF9E8EC),
+                        ),
+                      ],
                     ),
 
                     SizedBox(height: 50),
@@ -638,64 +637,105 @@ class _MapaPageState extends State<MapaPage> {
 
       // =========================================
       // BOTTOM NAVIGATION
-      // =========================================
+      // BOTTOM NAVIGATION
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
 
-        selectedItemColor: moradoIconos,
+        onTap: (index) {
+          if (widget.role == "usuario") {
+            // USUARIO
+            switch (index) {
+              case 0:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        HomePage(alias: widget.alias, role: widget.role),
+                  ),
+                );
+                break;
 
-        unselectedItemColor: moradoIconos,
+              case 1:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificacionesPage(
+                      alias: widget.alias,
+                      role: widget.role,
+                    ),
+                  ),
+                );
+                break;
 
-        backgroundColor: moradoSuave.withOpacity(0.3),
+              case 2:
+                // Ayuda
+                break;
+            }
+          } else {
+            // ADMINISTRADOR
+            switch (index) {
+              case 0:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        HomePage(alias: widget.alias, role: widget.role),
+                  ),
+                );
+                break;
+
+              case 1:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MapaPage(alias: widget.alias, role: widget.role),
+                  ),
+                );
+                break;
+
+              case 2:
+                // Ayuda
+                break;
+            }
+          }
+        },
 
         type: BottomNavigationBarType.fixed,
 
-        onTap: (index) {
-          if (index == currentIndex) {
-            return;
-          }
+        selectedItemColor: moradoIconos,
+        unselectedItemColor: moradoIconos,
+        backgroundColor: moradoSuave.withOpacity(0.7),
 
-          Widget page;
-
-          switch (index) {
-            case 0:
-              page = HomePage(alias: widget.alias);
-              break;
-
-            case 1:
-              page = NotificacionesPage(alias: widget.alias);
-              break;
-
-            case 2:
-              page = MapaPage(alias: widget.alias);
-              break;
-
-            default:
-              page = HomePage(alias: widget.alias);
-          }
-
-          Navigator.pushReplacement(
-            context,
-
-            MaterialPageRoute(builder: (context) => page),
-          );
-        },
-
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: "Notificaciones",
-          ),
-
-          BottomNavigationBarItem(icon: Icon(Icons.location_on), label: "Mapa"),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.support_agent),
-            label: "Ayuda",
-          ),
-        ],
+        items: widget.role == "usuario"
+            ? [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: "Inicio",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications),
+                  label: "Notificaciones",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.support_agent),
+                  label: "Ayuda",
+                ),
+              ]
+            : [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: "Inicio",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.location_on),
+                  label: "Mapa",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.support_agent),
+                  label: "Ayuda",
+                ),
+              ],
       ),
     );
   }

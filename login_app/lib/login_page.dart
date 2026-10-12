@@ -3,6 +3,7 @@ import 'home_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'recuperar_password_page.dart';
+import 'registro_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -14,6 +15,15 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
 
   bool isLoading = false;
+  bool obscurePassword = true;
+  bool rememberMe = false;
+
+  @override
+  void dispose() {
+    aliasController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   bool validarPassword(String password) {
     final regex = RegExp(
@@ -21,6 +31,13 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     return regex.hasMatch(password);
+  }
+
+  void irARegistro() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => RegistroPage()),
+    );
   }
 
   Future<void> login() async {
@@ -61,16 +78,20 @@ class _LoginPageState extends State<LoginPage> {
       var data = jsonDecode(response.body);
 
       if (data["success"]) {
+        String role = data["role"] ?? "usuario";
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(alias: aliasController.text),
+            builder: (context) =>
+                HomePage(alias: aliasController.text, role: role),
           ),
         );
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Credenciales incorrectas")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data["message"] ?? "Credenciales incorrectas"),
+          ),
+        );
       }
     } catch (e) {
       print(e);
@@ -97,14 +118,13 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    Color moradoSuave = Color(0xFFAB8FB8);
+    const Color moradoSuave = Color(0xFFAB8FB8);
+    const Color moradoTexto = Color(0xFF7445A8);
 
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: Stack(
         children: [
-          // CÍRCULO OSCURO
           Positioned(
             top: -300,
             left: -130,
@@ -117,8 +137,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-
-          // CÍRCULO CLARO
           Positioned(
             top: -180,
             left: -100,
@@ -131,124 +149,265 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-
+          Positioned(
+            right: -165,
+            bottom: -160,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                color: moradoSuave.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            right: -105,
+            bottom: -110,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                color: moradoSuave.withOpacity(0.25),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 35),
-
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 80),
-
-                      // ICONO
-                      CircleAvatar(
-                        radius: 55,
-                        backgroundColor: moradoSuave.withOpacity(0.2),
-                        child: Icon(Icons.person, size: 60, color: moradoSuave),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 430),
+                    child: Card(
+                      elevation: 8,
+                      shadowColor: moradoSuave.withOpacity(0.2),
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
-
-                      SizedBox(height: 40),
-
-                      // CAMPO ALIAS
-                      SizedBox(
-                        width: 460,
-
-                        child: TextField(
-                          controller: aliasController,
-
-                          decoration: InputDecoration(
-                            hintText: "Alias",
-
-                            filled: true,
-                            fillColor: moradoSuave,
-
-                            hintStyle: TextStyle(color: Colors.white),
-
-                            prefixIcon: Icon(Icons.person, color: Colors.white),
-
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide: BorderSide.none,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 18, 24, 16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(
+                              radius: 29,
+                              backgroundColor: moradoSuave.withOpacity(0.2),
+                              child: Icon(
+                                Icons.person,
+                                size: 34,
+                                color: moradoTexto,
+                              ),
                             ),
-                          ),
-
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-
-                      // CAMPO PASSWORD
-                      SizedBox(
-                        width: 460,
-
-                        child: TextField(
-                          controller: passwordController,
-                          obscureText: true,
-
-                          decoration: InputDecoration(
-                            hintText: "Contraseña",
-
-                            filled: true,
-                            fillColor: moradoSuave,
-
-                            hintStyle: TextStyle(color: Colors.white),
-
-                            prefixIcon: Icon(Icons.lock, color: Colors.white),
-
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide: BorderSide.none,
+                            const SizedBox(height: 12),
+                            const Text(
+                              "Bienvenido",
+                              style: TextStyle(
+                                fontSize: 23,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF17202A),
+                              ),
                             ),
-                          ),
-
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-
-                      SizedBox(height: 30),
-
-                      // BOTÓN LOGIN PEQUEÑO Y CENTRADO
-                      SizedBox(
-                        width: 180,
-                        height: 50,
-
-                        child: ElevatedButton(
-                          onPressed: isLoading ? null : login,
-
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: moradoSuave,
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                            const SizedBox(height: 2),
+                            const Text(
+                              "Ingresa a tu cuenta",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.black54,
+                              ),
                             ),
-                          ),
-
-                          child: isLoading
-                              ? CircularProgressIndicator(color: Colors.white)
-                              : Text(
-                                  "Iniciar Sesión",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
+                            const SizedBox(height: 22),
+                            TextField(
+                              controller: aliasController,
+                              decoration: InputDecoration(
+                                hintText: "Alias",
+                                prefixIcon: Icon(
+                                  Icons.person_outline,
+                                  color: moradoTexto,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 13,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFB8A7C9),
                                   ),
                                 ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFB8A7C9),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: moradoTexto,
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: passwordController,
+                              obscureText: obscurePassword,
+                              decoration: InputDecoration(
+                                hintText: "Contraseña",
+                                prefixIcon: Icon(
+                                  Icons.lock_outline,
+                                  color: moradoTexto,
+                                ),
+                                suffixIcon: IconButton(
+                                  tooltip: obscurePassword
+                                      ? "Mostrar contraseña"
+                                      : "Ocultar contraseña",
+                                  onPressed: () {
+                                    setState(() {
+                                      obscurePassword = !obscurePassword;
+                                    });
+                                  },
+                                  icon: Icon(
+                                    obscurePassword
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                    color: moradoTexto,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 13,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFB8A7C9),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFB8A7C9),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: moradoTexto,
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 30,
+                                  child: Checkbox(
+                                    value: rememberMe,
+                                    activeColor: moradoTexto,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        rememberMe = value ?? false;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const Expanded(
+                                  child: Text(
+                                    "Recordarme",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: recoverAccount,
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(0, 36),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: const Text(
+                                    "¿Olvidaste tu contraseña?",
+                                    style: TextStyle(
+                                      color: moradoTexto,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 7),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 42,
+                              child: ElevatedButton(
+                                onPressed: isLoading ? null : login,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: moradoTexto,
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                ),
+                                child: isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(
+                                        "Iniciar sesión",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: irARegistro,
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(0, 28),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text.rich(
+                                TextSpan(
+                                  text: "¿No tienes una cuenta? ",
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 11,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: "Regístrate",
+                                      style: TextStyle(
+                                        color: moradoTexto,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-
-                      SizedBox(height: 25),
-
-                      // RECUPERAR CONTRASEÑA ABAJO
-                      TextButton(
-                        onPressed: recoverAccount,
-                        child: Text(
-                          "¿Olvidaste tu contraseña?",
-                          style: TextStyle(color: moradoSuave, fontSize: 15),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),

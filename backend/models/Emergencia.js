@@ -7,6 +7,12 @@ const EmergenciaSchema = new mongoose.Schema({
         required: true,
     },
 
+    estado: {
+    type: String,
+    enum: ["Pendiente", "En revisión", "Atendido", "Cerrado"],
+    default: "Pendiente",
+    },
+
     latitud: {
         type: Number,
     },

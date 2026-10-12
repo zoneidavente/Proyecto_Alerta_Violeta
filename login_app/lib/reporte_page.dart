@@ -8,8 +8,9 @@ import 'package:geolocator/geolocator.dart';
 
 class ReportePage extends StatefulWidget {
   final String alias;
+  final String role;
 
-  ReportePage({required this.alias});
+  ReportePage({required this.alias, required this.role});
 
   @override
   State<ReportePage> createState() => _ReportePageState();
@@ -17,6 +18,7 @@ class ReportePage extends StatefulWidget {
 
 class _ReportePageState extends State<ReportePage> {
   int currentIndex = 1;
+  bool compartirUbicacion = true;
 
   String? tipoAcoso;
 
@@ -103,8 +105,13 @@ class _ReportePageState extends State<ReportePage> {
       return;
     }
 
-    // OBTENER UBICACIÓN
-    await obtenerUbicacion();
+    if (compartirUbicacion) {
+      await obtenerUbicacion();
+    } else {
+      latitud = null;
+      longitud = null;
+      direccion = "";
+    }
 
     try {
       Map<String, dynamic> bodyData = {
@@ -124,7 +131,7 @@ class _ReportePageState extends State<ReportePage> {
       print(jsonEncode(bodyData));
 
       var response = await http.post(
-        Uri.parse("http://192.168.0.19:3000/reporte"),
+        Uri.parse("http://192.168.20.32:3000/reporte"),
 
         headers: {"Content-Type": "application/json"},
 
@@ -136,8 +143,38 @@ class _ReportePageState extends State<ReportePage> {
       var data = jsonDecode(response.body);
 
       if (data["success"]) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Reporte enviado correctamente")),
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) {
+            Future<void>.delayed(const Duration(seconds: 2), () {
+              if (dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+              }
+            });
+
+            return Dialog(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 24,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.green),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        "Reporte enviado correctamente",
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
 
         descripcionController.clear();
@@ -160,312 +197,432 @@ class _ReportePageState extends State<ReportePage> {
   }
 
   @override
+  void dispose() {
+    descripcionController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    Color fondo = Color(0xFFF3EDF5);
-    Color moradoSuave = Color(0xFFAB8FB8);
-    Color moradoIconos = Color.fromARGB(255, 60, 21, 78);
-    Color rojoBoton = Color(0xFFE35D6A);
+    const fondo = Color(0xFFF7F0FC);
+    const morado = Color(0xFF54216F);
+    const moradoSuave = Color(0xFFEFE2FA);
+    const borde = Color(0xFFD9C6E8);
+    const rojo = Color(0xFFFF5B70);
 
     return Scaffold(
       backgroundColor: fondo,
-
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Stack(
-            children: [
-              // CÍRCULO OSCURO
-              Positioned(
-                top: -290,
-                left: -130,
-
-                child: Transform.translate(
-                  offset: Offset(-90, -90),
-
-                  child: Container(
-                    width: 800,
-                    height: 420,
-
-                    decoration: BoxDecoration(
-                      color: moradoSuave,
-                      shape: BoxShape.circle,
-                    ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -110,
+              right: -90,
+              child: Container(
+                width: 230,
+                height: 170,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE9D7F7),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(150),
                   ),
                 ),
               ),
-
-              // CÍRCULO CLARO
-              Positioned(
-                top: -180,
-                left: -100,
-
-                child: Transform.translate(
-                  offset: Offset(-98, -98),
-
-                  child: Container(
-                    width: 400,
-                    height: 390,
-
-                    decoration: BoxDecoration(
-                      color: moradoSuave.withOpacity(0.7),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+            ),
+            Positioned(
+              bottom: -100,
+              left: -80,
+              child: Container(
+                width: 210,
+                height: 190,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE9D7F7),
+                  shape: BoxShape.circle,
                 ),
               ),
-
-              // BARRA SUPERIOR
-              Container(
-                width: double.infinity,
-                height: 110,
-                padding: EdgeInsets.symmetric(horizontal: 18),
-
-                decoration: BoxDecoration(color: moradoSuave.withOpacity(0.4)),
-
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                  children: [
-                    Text(
-                      "7:00",
-
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w600,
+            ),
+            Column(
+              children: [
+                SizedBox(
+                  height: 48,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 48,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            tooltip: "Volver",
+                            onPressed: () => Navigator.maybePop(context),
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new,
+                              size: 17,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: const Color(0xFFE6D3F4),
+                              foregroundColor: morado,
+                              fixedSize: const Size(34, 34),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-
-                    Row(
-                      children: [
-                        Icon(Icons.signal_cellular_alt, size: 18),
-
-                        SizedBox(width: 5),
-
-                        Icon(Icons.wifi, size: 18),
-
-                        SizedBox(width: 5),
-
-                        Icon(Icons.battery_full, size: 18),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    SizedBox(height: 60),
-
-                    // TÍTULO
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              "Reporte Detallado",
-
+                      Expanded(
+                        child: Center(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: const Text(
+                              "Reporte detallado",
                               style: TextStyle(
-                                fontSize: 20,
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                                color: morado,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ),
-
-                        SizedBox(width: 20),
-                      ],
-                    ),
-
-                    SizedBox(height: 50),
-
-                    // TIPO DE ACOSO
-                    Text(
-                      "Tipo de acoso",
-
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w600,
                       ),
-                    ),
-
-                    SizedBox(height: 10),
-
-                    DropdownButtonFormField<String>(
-                      value: tipoAcoso,
-
-                      decoration: InputDecoration(
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black54),
-                        ),
-                      ),
-
-                      hint: Text("Selecciona"),
-
-                      items: tipos.map((tipo) {
-                        return DropdownMenuItem(value: tipo, child: Text(tipo));
-                      }).toList(),
-
-                      onChanged: (value) {
-                        setState(() {
-                          tipoAcoso = value;
-                        });
-                      },
-                    ),
-
-                    SizedBox(height: 25),
-
-                    // DESCRIPCIÓN
-                    Container(
-                      height: 110,
-
-                      decoration: BoxDecoration(
-                        color: moradoSuave.withOpacity(0.2),
-
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-
-                      child: TextField(
-                        controller: descripcionController,
-
-                        maxLines: 5,
-
-                        decoration: InputDecoration(
-                          hintText: "Descripción (Opcional)",
-
-                          hintStyle: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w500,
-                          ),
-
-                          border: InputBorder.none,
-
-                          contentPadding: EdgeInsets.all(15),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 40),
-
-                    // BOTÓN ENVIAR
-                    Center(
-                      child: SizedBox(
-                        width: 320,
-                        height: 60,
-
-                        child: ElevatedButton(
-                          onPressed: enviarReporte,
-
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: rojoBoton,
-
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                          ),
-
-                          child: Text(
-                            "ENVIAR REPORTE",
-
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 40),
-
-                    // TEXTO FINAL
-                    Center(
-                      child: Text(
-                        "Tu ubicación será enviada de forma automática,\n"
-                        "no se registran datos personales.",
-
-                        textAlign: TextAlign.center,
-
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 30),
-                  ],
+                      const SizedBox(width: 48),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight - 26,
+                          ),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 500),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.96),
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: morado.withValues(alpha: 0.09),
+                                      blurRadius: 22,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Tipo de situación",
+                                      style: TextStyle(
+                                        color: morado,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    DropdownButtonFormField<String>(
+                                      initialValue: tipoAcoso,
+                                      isExpanded: true,
+                                      decoration: InputDecoration(
+                                        hintText: "Selecciona una situación",
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 9,
+                                            ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: borde,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: morado,
+                                          ),
+                                        ),
+                                      ),
+                                      items: tipos.map((tipo) {
+                                        return DropdownMenuItem(
+                                          value: tipo,
+                                          child: Text(tipo),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) =>
+                                          setState(() => tipoAcoso = value),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    const Text(
+                                      "Describe lo ocurrido",
+                                      style: TextStyle(
+                                        color: morado,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextField(
+                                      controller: descripcionController,
+                                      maxLength: 500,
+                                      minLines: 3,
+                                      maxLines: 4,
+                                      style: const TextStyle(fontSize: 12),
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            "Escribe aquí los detalles...",
+                                        hintStyle: const TextStyle(
+                                          color: Color(0xFF8D8196),
+                                          fontSize: 12,
+                                        ),
+                                        counterStyle: const TextStyle(
+                                          color: Color(0xFF806D8B),
+                                          fontSize: 9,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.fromLTRB(
+                                              12,
+                                              10,
+                                              12,
+                                              4,
+                                            ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: borde,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: morado,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 7,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: moradoSuave,
+                                        borderRadius: BorderRadius.circular(7),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on,
+                                            color: morado,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "Compartir mi ubicación actual",
+                                                  style: TextStyle(
+                                                    color: morado,
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "Solo se incluirá en este reporte.",
+                                                  style: TextStyle(
+                                                    color: Color(0xFF806D8B),
+                                                    fontSize: 9,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Switch(
+                                            value: compartirUbicacion,
+                                            activeThumbColor: Colors.white,
+                                            activeTrackColor: Color(0xFF843AC0),
+                                            onChanged: (value) => setState(
+                                              () => compartirUbicacion = value,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: () =>
+                                                Navigator.maybePop(context),
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor: morado,
+                                              side: const BorderSide(
+                                                color: Color(0xFF9149C6),
+                                              ),
+                                              minimumSize: const Size(0, 40),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                              ),
+                                            ),
+                                            child: const Text("Cancelar"),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: enviarReporte,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: rojo,
+                                              foregroundColor: Colors.white,
+                                              minimumSize: const Size(0, 40),
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                              ),
+                                            ),
+                                            child: const FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: Text("Enviar reporte"),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
 
       // BOTTOM NAVIGATION
+      // BOTTOM NAVIGATION
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
 
-        type: BottomNavigationBarType.fixed,
-
-        selectedItemColor: moradoIconos,
-        unselectedItemColor: moradoIconos,
-
-        backgroundColor: moradoSuave.withOpacity(0.3),
-
         onTap: (index) {
-          Widget page;
+          if (widget.role == "usuario") {
+            // USUARIO
+            switch (index) {
+              case 0:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        HomePage(alias: widget.alias, role: widget.role),
+                  ),
+                );
+                break;
 
-          switch (index) {
-            case 0:
-              page = HomePage(alias: widget.alias);
-              break;
+              case 1:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificacionesPage(
+                      alias: widget.alias,
+                      role: widget.role,
+                    ),
+                  ),
+                );
+                break;
 
-            case 1:
-              page = NotificacionesPage(alias: widget.alias);
-              break;
+              case 2:
+                // Ayuda
+                break;
+            }
+          } else {
+            // ADMINISTRADOR
+            switch (index) {
+              case 0:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        HomePage(alias: widget.alias, role: widget.role),
+                  ),
+                );
+                break;
 
-            case 2:
-              page = MapaPage(alias: widget.alias);
-              break;
+              case 1:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MapaPage(alias: widget.alias, role: widget.role),
+                  ),
+                );
+                break;
 
-            default:
-              page = HomePage(alias: widget.alias);
+              case 2:
+                // Ayuda
+                break;
+            }
           }
-
-          Navigator.pushReplacement(
-            context,
-
-            MaterialPageRoute(builder: (context) => page),
-          );
         },
 
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+        type: BottomNavigationBarType.fixed,
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: "Notificaciones",
-          ),
+        selectedItemColor: morado,
+        unselectedItemColor: morado,
+        backgroundColor: const Color(0xFFD6B7EC),
 
-          BottomNavigationBarItem(icon: Icon(Icons.location_on), label: "Mapa"),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.support_agent),
-            label: "Ayuda",
-          ),
-        ],
+        items: widget.role == "usuario"
+            ? [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: "Inicio",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications),
+                  label: "Notificaciones",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.support_agent),
+                  label: "Ayuda",
+                ),
+              ]
+            : [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: "Inicio",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.location_on),
+                  label: "Mapa",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.support_agent),
+                  label: "Ayuda",
+                ),
+              ],
       ),
     );
   }
