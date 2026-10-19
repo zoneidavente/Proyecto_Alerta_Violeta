@@ -84,7 +84,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
         bool hayNueva = nuevosIds.difference(idsNotificaciones).isNotEmpty;
 
         if (hayNueva) {
-          await audioPlayer.play(AssetSource('sonido_notificacion.mp3'));
+          await audioPlayer.play(AssetSource('alertaSonido.mp3'));
         }
       }
 

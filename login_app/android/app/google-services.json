@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "912396748232",
+    "project_id": "alerta-violeta-b6d28",
+    "storage_bucket": "alerta-violeta-b6d28.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:912396748232:android:aba09a6376892dbc0decfd",
+        "android_client_info": {
+          "package_name": "com.example.login_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFljbWfEtdXkvxrw6lXchsGe5c3FtEdHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

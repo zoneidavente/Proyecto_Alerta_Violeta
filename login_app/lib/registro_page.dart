@@ -249,58 +249,70 @@ class _RegistroPageState extends State<RegistroPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Color moradoHeader = const Color(0xFFA788DC);
-    final Color moradoPrincipal = const Color(0xFFB68AD9);
-    final Color moradoFondo = const Color(0xFFE7D9F2);
-    final Color fondoGeneral = const Color(0xFFF5F3F6);
-    final Color textoPrincipal = const Color(0xFF5B3B73);
+    const Color moradoSuave = Color(0xFFAB8FB8);
+    const Color moradoTexto = Color(0xFF7445A8);
+    const Color moradoCampo = Color(0xFFF1EAF5);
 
     return Scaffold(
-      backgroundColor: fondoGeneral,
-      appBar: AppBar(
-        backgroundColor: moradoHeader,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 28),
-              onPressed: () => Navigator.pop(context),
-              padding: const EdgeInsets.only(left: 10),
-              splashRadius: 24,
-            ),
-            const Text(
-              "Regresar",
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w200),
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Positioned(
-            top: -110,
-            left: -80,
+            top: -300,
+            left: -130,
             child: Container(
-              width: 260,
-              height: 260,
+              width: 995,
+              height: 465,
               decoration: BoxDecoration(
-                color: moradoFondo,
+                color: moradoSuave,
                 shape: BoxShape.circle,
               ),
             ),
           ),
           Positioned(
-            right: -100,
-            bottom: -100,
+            top: -180,
+            left: -100,
             child: Container(
-              width: 260,
-              height: 260,
+              width: 490,
+              height: 465,
               decoration: BoxDecoration(
-                color: moradoFondo,
+                color: moradoSuave.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            right: -165,
+            bottom: -160,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                color: moradoSuave.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            right: -105,
+            bottom: -110,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                color: moradoSuave.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                tooltip: "Regresar",
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                color: moradoTexto,
+                onPressed: () => Navigator.pop(context),
               ),
             ),
           ),
@@ -333,13 +345,13 @@ class _RegistroPageState extends State<RegistroPage> {
                         width: 96,
                         height: 96,
                         decoration: BoxDecoration(
-                          color: moradoPrincipal.withOpacity(0.18),
+                          color: moradoSuave.withOpacity(0.2),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.person_add_alt_1_rounded,
                           size: 52,
-                          color: moradoPrincipal,
+                          color: moradoTexto,
                         ),
                       ),
 
@@ -348,9 +360,9 @@ class _RegistroPageState extends State<RegistroPage> {
                       const Text(
                         "Crear una cuenta",
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF5B3B73),
+                          color: moradoTexto,
                         ),
                       ),
 
@@ -373,7 +385,7 @@ class _RegistroPageState extends State<RegistroPage> {
                         hintText: "Alias",
                         icon: Icons.person_outline_rounded,
                         obscureText: false,
-                        fillColor: moradoPrincipal,
+                        fillColor: moradoCampo,
                       ),
 
                       const SizedBox(height: 16),
@@ -383,7 +395,7 @@ class _RegistroPageState extends State<RegistroPage> {
                         hintText: "Contraseña",
                         icon: Icons.lock_outline_rounded,
                         obscureText: true,
-                        fillColor: moradoPrincipal,
+                        fillColor: moradoCampo,
                       ),
 
                       const SizedBox(height: 16),
@@ -393,7 +405,7 @@ class _RegistroPageState extends State<RegistroPage> {
                         hintText: "Confirmar contraseña",
                         icon: Icons.lock_outline_rounded,
                         obscureText: true,
-                        fillColor: moradoPrincipal,
+                        fillColor: moradoCampo,
                       ),
 
                       const SizedBox(height: 24),
@@ -404,7 +416,8 @@ class _RegistroPageState extends State<RegistroPage> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : registrar,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: moradoPrincipal,
+                            backgroundColor: moradoTexto,
+                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(24),
                             ),
@@ -417,9 +430,8 @@ class _RegistroPageState extends State<RegistroPage> {
                               : const Text(
                                   "Registrarse",
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 14,
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                         ),
@@ -445,13 +457,13 @@ class _RegistroPageState extends State<RegistroPage> {
     return TextField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(color: Colors.white, fontSize: 16),
+      style: const TextStyle(color: Color(0xFF7445A8), fontSize: 16),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.white70, fontSize: 16),
+        hintStyle: const TextStyle(color: Color(0xFF7445A8), fontSize: 16),
         filled: true,
         fillColor: fillColor,
-        prefixIcon: Icon(icon, color: Colors.white, size: 22),
+        prefixIcon: Icon(icon, color: const Color(0xFF7445A8), size: 22),
         contentPadding: const EdgeInsets.symmetric(
           vertical: 16,
           horizontal: 14,

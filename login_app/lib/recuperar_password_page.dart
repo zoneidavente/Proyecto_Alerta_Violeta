@@ -184,39 +184,74 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color morado = Color(0xFF9B78AA);
-    const Color borde = Color(0xFF8F8792);
+    const Color moradoSuave = Color(0xFFAB8FB8);
+    const Color moradoTexto = Color(0xFF7445A8);
+    const Color moradoCampo = Color(0xFFF1EAF5);
+    const Color borde = Color(0xFFB8A7C9);
 
     return Scaffold(
-      backgroundColor: Color(0xFFF3EDF5),
-      appBar: AppBar(
-        backgroundColor: Color(0xFFF3EDF5),
-        foregroundColor: morado,
-        elevation: 0,
-        toolbarHeight: 48,
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          tooltip: "Regresar",
-          icon: Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Positioned(
-            top: -150,
-            left: -105,
+            top: -300,
+            left: -130,
             child: Container(
-              width: 220,
-              height: 220,
+              width: 995,
+              height: 465,
               decoration: BoxDecoration(
-                color: morado.withOpacity(0.28),
+                color: moradoSuave,
                 shape: BoxShape.circle,
               ),
             ),
           ),
-
+          Positioned(
+            top: -180,
+            left: -100,
+            child: Container(
+              width: 490,
+              height: 465,
+              decoration: BoxDecoration(
+                color: moradoSuave.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            right: -165,
+            bottom: -160,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                color: moradoSuave.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            right: -105,
+            bottom: -110,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                color: moradoSuave.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                tooltip: "Regresar",
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                color: moradoTexto,
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ),
           Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
@@ -245,7 +280,7 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: morado,
+                          color: moradoTexto,
                         ),
                       ),
 
@@ -255,11 +290,16 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                       TextField(
                         controller: aliasController,
                         enabled: !claveVerificada,
+                        style: const TextStyle(color: moradoTexto),
                         decoration: InputDecoration(
                           labelText: "Alias",
-                          prefixIcon: Icon(Icons.person),
+                          labelStyle: const TextStyle(color: moradoTexto),
+                          prefixIcon: const Icon(
+                            Icons.person,
+                            color: moradoTexto,
+                          ),
                           filled: true,
-                          fillColor: Color(0xFFFAF8FB),
+                          fillColor: moradoCampo,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(13),
                             borderSide: BorderSide(color: borde),
@@ -267,12 +307,15 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(13),
                             borderSide: BorderSide(
-                              color: borde.withOpacity(0.55),
+                              color: borde.withValues(alpha: 0.55),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(13),
-                            borderSide: BorderSide(color: morado, width: 1.6),
+                            borderSide: BorderSide(
+                              color: moradoTexto,
+                              width: 1.6,
+                            ),
                           ),
                         ),
                       ),
@@ -285,11 +328,16 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                         enabled: !claveVerificada,
                         keyboardType: TextInputType.number,
                         maxLength: 4,
+                        style: const TextStyle(color: moradoTexto),
                         decoration: InputDecoration(
                           labelText: "Clave de recuperación",
-                          prefixIcon: Icon(Icons.vpn_key),
+                          labelStyle: const TextStyle(color: moradoTexto),
+                          prefixIcon: const Icon(
+                            Icons.vpn_key,
+                            color: moradoTexto,
+                          ),
                           filled: true,
-                          fillColor: Color(0xFFFAF8FB),
+                          fillColor: moradoCampo,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(13),
                             borderSide: BorderSide(color: borde),
@@ -297,12 +345,15 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(13),
                             borderSide: BorderSide(
-                              color: borde.withOpacity(0.55),
+                              color: borde.withValues(alpha: 0.55),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(13),
-                            borderSide: BorderSide(color: morado, width: 1.6),
+                            borderSide: BorderSide(
+                              color: moradoTexto,
+                              width: 1.6,
+                            ),
                           ),
                         ),
                       ),
@@ -320,12 +371,12 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
 
                         // BOTÓN VERIFICAR
                         SizedBox(
-                          width: double.infinity,
-                          height: 50,
+                          width: 180,
+                          height: 44,
                           child: ElevatedButton(
                             onPressed: isLoading ? null : verificarClave,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: morado,
+                              backgroundColor: moradoTexto,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
@@ -356,11 +407,16 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                         TextField(
                           controller: passwordController,
                           obscureText: true,
+                          style: const TextStyle(color: moradoTexto),
                           decoration: InputDecoration(
                             labelText: "Nueva contraseña",
-                            prefixIcon: Icon(Icons.lock),
+                            labelStyle: const TextStyle(color: moradoTexto),
+                            prefixIcon: const Icon(
+                              Icons.lock,
+                              color: moradoTexto,
+                            ),
                             filled: true,
-                            fillColor: Color(0xFFFAF8FB),
+                            fillColor: moradoCampo,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(13),
                               borderSide: BorderSide(color: borde),
@@ -368,12 +424,15 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(13),
                               borderSide: BorderSide(
-                                color: borde.withOpacity(0.55),
+                                color: borde.withValues(alpha: 0.55),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(13),
-                              borderSide: BorderSide(color: morado, width: 1.6),
+                              borderSide: BorderSide(
+                                color: moradoTexto,
+                                width: 1.6,
+                              ),
                             ),
                           ),
                         ),
@@ -383,11 +442,16 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                         TextField(
                           controller: confirmController,
                           obscureText: true,
+                          style: const TextStyle(color: moradoTexto),
                           decoration: InputDecoration(
                             labelText: "Confirmar contraseña",
-                            prefixIcon: Icon(Icons.lock_outline),
+                            labelStyle: const TextStyle(color: moradoTexto),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: moradoTexto,
+                            ),
                             filled: true,
-                            fillColor: Color(0xFFFAF8FB),
+                            fillColor: moradoCampo,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(13),
                               borderSide: BorderSide(color: borde),
@@ -395,12 +459,15 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(13),
                               borderSide: BorderSide(
-                                color: borde.withOpacity(0.55),
+                                color: borde.withValues(alpha: 0.55),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(13),
-                              borderSide: BorderSide(color: morado, width: 1.6),
+                              borderSide: BorderSide(
+                                color: moradoTexto,
+                                width: 1.6,
+                              ),
                             ),
                           ),
                         ),
@@ -414,7 +481,7 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                           child: ElevatedButton(
                             onPressed: isLoading ? null : recuperar,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: morado,
+                              backgroundColor: moradoTexto,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
