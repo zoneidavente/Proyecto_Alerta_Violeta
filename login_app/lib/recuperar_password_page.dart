@@ -186,7 +186,6 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
   Widget build(BuildContext context) {
     const Color moradoSuave = Color(0xFFAB8FB8);
     const Color moradoTexto = Color(0xFF7445A8);
-    const Color moradoCampo = Color(0xFFF1EAF5);
     const Color borde = Color(0xFFB8A7C9);
 
     return Scaffold(
@@ -280,7 +279,7 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: moradoTexto,
+                          color: Color(0xFF17202A),
                         ),
                       ),
 
@@ -290,31 +289,30 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                       TextField(
                         controller: aliasController,
                         enabled: !claveVerificada,
-                        style: const TextStyle(color: moradoTexto),
                         decoration: InputDecoration(
-                          labelText: "Alias",
-                          labelStyle: const TextStyle(color: moradoTexto),
+                          hintText: "Alias",
                           prefixIcon: const Icon(
-                            Icons.person,
+                            Icons.person_outline,
                             color: moradoTexto,
                           ),
                           filled: true,
-                          fillColor: moradoCampo,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 13,
+                          ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13),
+                            borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(color: borde),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13),
-                            borderSide: BorderSide(
-                              color: borde.withValues(alpha: 0.55),
-                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: borde),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13),
-                            borderSide: BorderSide(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
                               color: moradoTexto,
-                              width: 1.6,
+                              width: 1.5,
                             ),
                           ),
                         ),
@@ -328,31 +326,30 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                         enabled: !claveVerificada,
                         keyboardType: TextInputType.number,
                         maxLength: 4,
-                        style: const TextStyle(color: moradoTexto),
                         decoration: InputDecoration(
-                          labelText: "Clave de recuperación",
-                          labelStyle: const TextStyle(color: moradoTexto),
+                          hintText: "Clave de recuperación",
                           prefixIcon: const Icon(
                             Icons.vpn_key,
                             color: moradoTexto,
                           ),
                           filled: true,
-                          fillColor: moradoCampo,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 13,
+                          ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13),
+                            borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(color: borde),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13),
-                            borderSide: BorderSide(
-                              color: borde.withValues(alpha: 0.55),
-                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: borde),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13),
-                            borderSide: BorderSide(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
                               color: moradoTexto,
-                              width: 1.6,
+                              width: 1.5,
                             ),
                           ),
                         ),
@@ -407,31 +404,30 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                         TextField(
                           controller: passwordController,
                           obscureText: true,
-                          style: const TextStyle(color: moradoTexto),
                           decoration: InputDecoration(
-                            labelText: "Nueva contraseña",
-                            labelStyle: const TextStyle(color: moradoTexto),
+                            hintText: "Nueva contraseña",
                             prefixIcon: const Icon(
-                              Icons.lock,
+                              Icons.lock_outline,
                               color: moradoTexto,
                             ),
                             filled: true,
-                            fillColor: moradoCampo,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 13,
+                            ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(13),
+                              borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(color: borde),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(13),
-                              borderSide: BorderSide(
-                                color: borde.withValues(alpha: 0.55),
-                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: borde),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(13),
-                              borderSide: BorderSide(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(
                                 color: moradoTexto,
-                                width: 1.6,
+                                width: 1.5,
                               ),
                             ),
                           ),
@@ -442,31 +438,30 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
                         TextField(
                           controller: confirmController,
                           obscureText: true,
-                          style: const TextStyle(color: moradoTexto),
                           decoration: InputDecoration(
-                            labelText: "Confirmar contraseña",
-                            labelStyle: const TextStyle(color: moradoTexto),
+                            hintText: "Confirmar contraseña",
                             prefixIcon: const Icon(
                               Icons.lock_outline,
                               color: moradoTexto,
                             ),
                             filled: true,
-                            fillColor: moradoCampo,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 13,
+                            ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(13),
+                              borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(color: borde),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(13),
-                              borderSide: BorderSide(
-                                color: borde.withValues(alpha: 0.55),
-                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: borde),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(13),
-                              borderSide: BorderSide(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(
                                 color: moradoTexto,
-                                width: 1.6,
+                                width: 1.5,
                               ),
                             ),
                           ),

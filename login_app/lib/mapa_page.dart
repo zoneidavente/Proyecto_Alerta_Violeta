@@ -467,35 +467,6 @@ class _MapaPageState extends State<MapaPage> {
 
                 decoration: BoxDecoration(color: moradoSuave.withOpacity(0.4)),
 
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                  children: [
-                    Text(
-                      "7:00",
-
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    Row(
-                      children: [
-                        Icon(Icons.signal_cellular_alt, size: 18),
-
-                        SizedBox(width: 5),
-
-                        Icon(Icons.wifi, size: 18),
-
-                        SizedBox(width: 5),
-
-                        Icon(Icons.battery_full, size: 18),
-                      ],
-                    ),
-                  ],
-                ),
               ),
 
               // =========================================

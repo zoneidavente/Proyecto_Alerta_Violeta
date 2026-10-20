@@ -165,28 +165,6 @@ class _EmergenciaPageState extends State<EmergenciaPage> {
                   height: 110,
                   padding: EdgeInsets.symmetric(horizontal: 18),
                   decoration: BoxDecoration(color: rojo),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "7:00",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Icon(Icons.signal_cellular_alt, size: 18),
-                          SizedBox(width: 5),
-                          Icon(Icons.wifi, size: 18),
-                          SizedBox(width: 5),
-                          Icon(Icons.battery_full, size: 18),
-                        ],
-                      ),
-                    ],
-                  ),
                 ),
 
                 Positioned.fill(
@@ -219,7 +197,7 @@ class _EmergenciaPageState extends State<EmergenciaPage> {
                 textAlign: TextAlign.center,
 
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.w600,
                   color: Colors.black54,

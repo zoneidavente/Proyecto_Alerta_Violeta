@@ -119,7 +119,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
     super.dispose();
   }
 
-  Widget _buildFiltro(String label, IconData icon) {
+  Widget _buildFiltro(String label) {
     final bool seleccionado = filtroActual == label;
 
     return Expanded(
@@ -130,8 +130,8 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
           });
         },
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 10),
-          margin: EdgeInsets.only(right: 8),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          margin: const EdgeInsets.only(right: 5),
           decoration: BoxDecoration(
             color: seleccionado
                 ? Color(0xFFB68BC7)
@@ -153,16 +153,10 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 18,
-                color: seleccionado ? Colors.white : Color(0xFF5B3B69),
-              ),
-              SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: seleccionado ? Colors.white : Color(0xFF5B3B69),
                   fontFamily: 'Poppins',
@@ -233,28 +227,6 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
             height: 110,
             padding: EdgeInsets.symmetric(horizontal: 18),
             decoration: BoxDecoration(color: moradoSuave.withOpacity(0.4)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "7:00",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.signal_cellular_alt, size: 18),
-                    SizedBox(width: 5),
-                    Icon(Icons.wifi, size: 18),
-                    SizedBox(width: 5),
-                    Icon(Icons.battery_full, size: 18),
-                  ],
-                ),
-              ],
-            ),
           ),
           SafeArea(
             child: Padding(
@@ -266,19 +238,19 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
                     child: Text(
                       "Notificaciones",
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 21,
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w700,
                         color: Colors.black87,
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 34),
                   Row(
                     children: [
-                      _buildFiltro("Todas", Icons.list_alt),
-                      _buildFiltro("SOS", Icons.sos),
-                      _buildFiltro("Reportes", Icons.article_outlined),
+                      _buildFiltro("Todas"),
+                      _buildFiltro("SOS"),
+                      _buildFiltro("Reportes"),
                     ],
                   ),
                   SizedBox(height: 18),
@@ -295,7 +267,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
                           )
                         : ListView.separated(
                             itemCount: notificacionesFiltradas.length,
-                            separatorBuilder: (_, __) => SizedBox(height: 14),
+                            separatorBuilder: (_, __) => SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final item = notificacionesFiltradas[index];
                               final bool esSos = item["categoria"] == "SOS";
@@ -309,132 +281,127 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
                                   ? "Ubicación compartida"
                                   : (item["descripcion"] ??
                                         "Una persona me sigue");
+                              final String alias =
+                                  item["alias"]?.toString().trim().isNotEmpty ==
+                                      true
+                                  ? item["alias"].toString().trim()
+                                  : "Usuario";
                               final String direccion =
                                   item["direccion"] ?? "Carrera 42C, Cali";
                               final String tiempo = obtenerTiempo(
                                 item["fecha"],
                               );
+                              final colorAlerta = esSos
+                                  ? Colors.red.shade700
+                                  : Colors.orange.shade800;
+                              final colorFondo = esSos
+                                  ? const Color(0xFFFFF5F5)
+                                  : const Color(0xFFFFFBF0);
 
                               return Container(
-                                padding: EdgeInsets.all(14),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.92),
-                                  borderRadius: BorderRadius.circular(18),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 7,
-                                      offset: Offset(0, 3),
-                                    ),
-                                  ],
+                                  color: colorFondo,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: colorAlerta.withOpacity(0.18),
+                                  ),
                                 ),
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Container(
-                                      width: 52,
-                                      height: 52,
+                                      width: 36,
+                                      height: 36,
                                       decoration: BoxDecoration(
-                                        color: esSos
-                                            ? Color(0xFFFDE2E2)
-                                            : Color(0xFFF8E7B8),
+                                        color: colorAlerta.withOpacity(0.12),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
                                         esSos
                                             ? Icons.sos
                                             : Icons.warning_amber_rounded,
-                                        color: esSos
-                                            ? Colors.red
-                                            : Colors.orange,
-                                        size: 28,
+                                        color: colorAlerta,
+                                        size: 20,
                                       ),
                                     ),
-                                    SizedBox(width: 12),
+                                    const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: esSos
-                                                  ? Color(0xFFFDE2E2)
-                                                  : Color(0xFFF8E7B8),
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            child: Text(
-                                              etiqueta,
-                                              style: TextStyle(
-                                                color: esSos
-                                                    ? Colors.red.shade700
-                                                    : Colors.orange.shade700,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w700,
-                                                fontFamily: 'Poppins',
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(height: 8),
-                                          Text(
-                                            titulo,
-                                            style: TextStyle(
-                                              fontSize: 26,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF1F1F1F),
-                                              fontFamily: 'Poppins',
-                                            ),
-                                          ),
-                                          SizedBox(height: 6),
-                                          Text(
-                                            descripcion,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Color(0xFF4E4E4E),
-                                              fontFamily: 'Poppins',
-                                            ),
-                                          ),
-                                          SizedBox(height: 12),
                                           Row(
                                             children: [
-                                              Icon(
-                                                Icons.location_on,
-                                                size: 16,
-                                                color: Color(0xFF5B3B69),
-                                              ),
-                                              SizedBox(width: 6),
                                               Expanded(
                                                 child: Text(
-                                                  direccion,
-                                                  style: TextStyle(
-                                                    fontSize: 13,
+                                                  titulo,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF1F1F1F),
                                                     fontFamily: 'Poppins',
-                                                    color: Color(0xFF555555),
                                                   ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                tiempo,
+                                                maxLines: 1,
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontFamily: 'Poppins',
+                                                  color: Color(0xFF666666),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          SizedBox(height: 8),
+                                          Text(
+                                            "$etiqueta · Alias: $alias",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Color(0xFF4E4E4E),
+                                              fontFamily: 'Poppins',
+                                            ),
+                                          ),
+                                          if (!esSos)
+                                            Text(
+                                              descripcion,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                color: Color(0xFF666666),
+                                                fontFamily: 'Poppins',
+                                              ),
+                                            ),
                                           Row(
                                             children: [
                                               Icon(
-                                                Icons.access_time,
-                                                size: 16,
-                                                color: Color(0xFF5B3B69),
+                                                Icons.location_on,
+                                                size: 13,
+                                                color: colorAlerta,
                                               ),
-                                              SizedBox(width: 6),
-                                              Text(
-                                                tiempo,
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontFamily: 'Poppins',
-                                                  color: Color(0xFF666666),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  direccion,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 10,
+                                                    fontFamily: 'Poppins',
+                                                    color: Color(0xFF555555),
+                                                  ),
                                                 ),
                                               ),
                                             ],

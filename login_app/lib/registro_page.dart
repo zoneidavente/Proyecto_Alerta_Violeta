@@ -251,7 +251,6 @@ class _RegistroPageState extends State<RegistroPage> {
   Widget build(BuildContext context) {
     const Color moradoSuave = Color(0xFFAB8FB8);
     const Color moradoTexto = Color(0xFF7445A8);
-    const Color moradoCampo = Color(0xFFF1EAF5);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -362,7 +361,7 @@ class _RegistroPageState extends State<RegistroPage> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: moradoTexto,
+                          color: Color(0xFF17202A),
                         ),
                       ),
 
@@ -385,7 +384,6 @@ class _RegistroPageState extends State<RegistroPage> {
                         hintText: "Alias",
                         icon: Icons.person_outline_rounded,
                         obscureText: false,
-                        fillColor: moradoCampo,
                       ),
 
                       const SizedBox(height: 16),
@@ -395,7 +393,6 @@ class _RegistroPageState extends State<RegistroPage> {
                         hintText: "Contraseña",
                         icon: Icons.lock_outline_rounded,
                         obscureText: true,
-                        fillColor: moradoCampo,
                       ),
 
                       const SizedBox(height: 16),
@@ -405,7 +402,6 @@ class _RegistroPageState extends State<RegistroPage> {
                         hintText: "Confirmar contraseña",
                         icon: Icons.lock_outline_rounded,
                         obscureText: true,
-                        fillColor: moradoCampo,
                       ),
 
                       const SizedBox(height: 24),
@@ -452,33 +448,27 @@ class _RegistroPageState extends State<RegistroPage> {
     required String hintText,
     required IconData icon,
     required bool obscureText,
-    required Color fillColor,
   }) {
     return TextField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(color: Color(0xFF7445A8), fontSize: 16),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Color(0xFF7445A8), fontSize: 16),
         filled: true,
-        fillColor: fillColor,
+        fillColor: Colors.white,
         prefixIcon: Icon(icon, color: const Color(0xFF7445A8), size: 22),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 14,
-        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 13),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFB8A7C9)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFB8A7C9)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32),
-          borderSide: BorderSide(color: Colors.white, width: 1.5),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF7445A8), width: 1.5),
         ),
       ),
     );

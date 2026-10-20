@@ -204,11 +204,12 @@ class _ReportePageState extends State<ReportePage> {
 
   @override
   Widget build(BuildContext context) {
-    const fondo = Color(0xFFF7F0FC);
-    const morado = Color(0xFF54216F);
+    const fondo = Color(0xFFF3EDF5);
+    const morado = Color(0xFF3C154E);
     const moradoSuave = Color(0xFFEFE2FA);
     const borde = Color(0xFFD9C6E8);
     const rojo = Color(0xFFFF5B70);
+    const circuloMorado = Color(0xFFAB8FB8);
 
     return Scaffold(
       backgroundColor: fondo,
@@ -216,75 +217,37 @@ class _ReportePageState extends State<ReportePage> {
         child: Stack(
           children: [
             Positioned(
-              top: -110,
-              right: -90,
-              child: Container(
-                width: 230,
-                height: 170,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE9D7F7),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(150),
+              top: -290,
+              left: -130,
+              child: Transform.translate(
+                offset: const Offset(-90, -90),
+                child: Container(
+                  width: 800,
+                  height: 420,
+                  decoration: const BoxDecoration(
+                    color: circuloMorado,
+                    shape: BoxShape.circle,
                   ),
                 ),
               ),
             ),
             Positioned(
-              bottom: -100,
-              left: -80,
-              child: Container(
-                width: 210,
-                height: 190,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE9D7F7),
-                  shape: BoxShape.circle,
+              top: -180,
+              left: -100,
+              child: Transform.translate(
+                offset: const Offset(-98, -98),
+                child: Container(
+                  width: 400,
+                  height: 390,
+                  decoration: BoxDecoration(
+                    color: circuloMorado.withOpacity(0.7),
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
             ),
             Column(
               children: [
-                SizedBox(
-                  height: 48,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 48,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: IconButton(
-                            tooltip: "Volver",
-                            onPressed: () => Navigator.maybePop(context),
-                            icon: const Icon(
-                              Icons.arrow_back_ios_new,
-                              size: 17,
-                            ),
-                            style: IconButton.styleFrom(
-                              backgroundColor: const Color(0xFFE6D3F4),
-                              foregroundColor: morado,
-                              fixedSize: const Size(34, 34),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: const Text(
-                              "Reporte detallado",
-                              style: TextStyle(
-                                color: morado,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 48),
-                    ],
-                  ),
-                ),
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
@@ -315,6 +278,18 @@ class _ReportePageState extends State<ReportePage> {
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    const Center(
+                                      child: Text(
+                                        "Reporte detallado",
+                                        style: TextStyle(
+                                          color: Color(0xFF1F1F1F),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
                                     const Text(
                                       "Tipo de situación",
                                       style: TextStyle(
@@ -590,9 +565,9 @@ class _ReportePageState extends State<ReportePage> {
 
         type: BottomNavigationBarType.fixed,
 
-        selectedItemColor: morado,
-        unselectedItemColor: morado,
-        backgroundColor: const Color(0xFFD6B7EC),
+        selectedItemColor: const Color(0xFF3C154E),
+        unselectedItemColor: const Color(0xFF3C154E),
+        backgroundColor: circuloMorado.withOpacity(0.7),
 
         items: widget.role == "usuario"
             ? [
