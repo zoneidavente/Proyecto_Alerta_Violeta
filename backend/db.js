@@ -1,18 +1,21 @@
+
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
-
     try {
+        const uri = process.env.MONGODB_URI;
 
-        await mongoose.connect(
-            "mongodb://127.0.0.1:27017/acoso_cali"
-        );
+        if (!uri) {
+            throw new Error("Falta configurar MONGODB_URI");
+        }
 
-        console.log("MongoDB conectado");
+        await mongoose.connect(uri);
+
+        console.log("MongoDB Atlas conectado correctamente");
 
     } catch (error) {
-
-        console.log(error);
+        console.error("Error al conectar con MongoDB:", error.message);
+        process.exit(1);
     }
 };
 
