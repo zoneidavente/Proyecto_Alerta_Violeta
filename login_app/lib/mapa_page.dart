@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'home_page.dart';
 import 'notificaciones_page.dart';
+import 'api_config.dart';
 
 class MapaPage extends StatefulWidget {
   final String alias;
@@ -44,7 +45,7 @@ class _MapaPageState extends State<MapaPage> {
   Future<void> obtenerReportes() async {
     try {
       var response = await http.get(
-        Uri.parse("http://192.168.20.32:3000/reporte"),
+        apiUri('/reporte'),
       );
 
       if (response.statusCode == 200) {
@@ -466,7 +467,6 @@ class _MapaPageState extends State<MapaPage> {
                 padding: EdgeInsets.symmetric(horizontal: 18),
 
                 decoration: BoxDecoration(color: moradoSuave.withOpacity(0.4)),
-
               ),
 
               // =========================================

@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 
 import 'dart:convert';
+import 'api_config.dart';
 
 class NotificacionesPage extends StatefulWidget {
   final String alias;
@@ -40,12 +41,12 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
     try {
       // REPORTES
       var reporteResponse = await http.get(
-        Uri.parse("http://192.168.20.32:3000/reporte"),
+        apiUri('/reporte'),
       );
 
       // ALERTAS SOS
       var emergenciaResponse = await http.get(
-        Uri.parse("http://192.168.20.32:3000/emergencia"),
+        apiUri('/emergencia'),
       );
 
       List reportes = jsonDecode(reporteResponse.body);

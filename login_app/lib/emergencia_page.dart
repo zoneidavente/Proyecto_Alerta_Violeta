@@ -5,6 +5,7 @@ import 'notificaciones_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
+import 'api_config.dart';
 
 class EmergenciaPage extends StatefulWidget {
   final String alias;
@@ -77,7 +78,7 @@ class _EmergenciaPageState extends State<EmergenciaPage> {
 
     try {
       var response = await http.post(
-        Uri.parse("http://192.168.0.16:3000/emergencia"),
+        apiUri('/emergencia'),
 
         headers: {"Content-Type": "application/json"},
 

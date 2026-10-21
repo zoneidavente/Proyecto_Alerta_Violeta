@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'administrar_reportes_page.dart';
+import 'api_config.dart';
 
 class HomePage extends StatefulWidget {
   final String alias;
@@ -35,8 +36,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> cargarResumenAdmin() async {
     try {
       final respuestas = await Future.wait([
-        http.get(Uri.parse("http://192.168.20.32:3000/reporte")),
-        http.get(Uri.parse("http://192.168.20.32:3000/emergencia")),
+        http.get(apiUri('/reporte')),
+        http.get(apiUri('/emergencia')),
       ]);
 
       if (respuestas.every((respuesta) => respuesta.statusCode == 200)) {
@@ -572,7 +573,7 @@ class _HomePageState extends State<HomePage> {
 
       // ENVIAR ALERTA AL BACKEND
       final respuesta = await http.post(
-        Uri.parse("http://192.168.20.32:3000/emergencia"),
+        apiUri('/emergencia'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "alias": widget.alias,

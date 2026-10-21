@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'recuperar_password_page.dart';
 import 'registro_page.dart';
+import 'api_config.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -67,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       var response = await http.post(
-        Uri.parse("http://localhost:3000/login"),
+        apiUri('/login'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "alias": aliasController.text,

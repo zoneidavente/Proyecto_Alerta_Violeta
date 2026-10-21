@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'api_config.dart';
 
 class RecuperarPasswordPage extends StatefulWidget {
   final String alias;
@@ -57,7 +58,7 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
       // Primero verificamos la clave enviando una contraseña temporal.
       // El backend solamente debe comprobar alias + recoveryCode.
       var response = await http.post(
-        Uri.parse("http://localhost:3000/verificar-recuperacion"),
+        apiUri('/verificar-recuperacion'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"alias": alias, "recoveryCode": recoveryCode}),
       );
@@ -134,7 +135,7 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
 
     try {
       var response = await http.post(
-        Uri.parse("http://localhost:3000/recuperar"),
+        apiUri('/recuperar'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "alias": alias,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'api_config.dart';
 
 class AdministrarReportesPage extends StatefulWidget {
   final String alias;
@@ -19,7 +20,6 @@ class AdministrarReportesPage extends StatefulWidget {
 }
 
 class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
-  static const _api = 'http://192.168.20.32:3000';
   static const _pageSize = 10;
   static const _purple = Color(0xFF54216F);
   static const _border = Color(0xFFE9E3EE);
@@ -54,8 +54,8 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
 
     try {
       final respuestas = await Future.wait([
-        http.get(Uri.parse('$_api/reporte')),
-        http.get(Uri.parse('$_api/emergencia')),
+        http.get(apiUri('/reporte')),
+        http.get(apiUri('/emergencia')),
       ]);
       if (respuestas.any((respuesta) => respuesta.statusCode != 200)) {
         throw Exception('No se pudieron recuperar los reportes y alertas.');
@@ -206,7 +206,7 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
 
     try {
       final respuesta = await http.put(
-        Uri.parse('$_api/${esAlerta ? 'emergencia' : 'reporte'}/$id/estado'),
+        apiUri('/${esAlerta ? 'emergencia' : 'reporte'}/$id/estado'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'estado': nuevoEstado}),
       );

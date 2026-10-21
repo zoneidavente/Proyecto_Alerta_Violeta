@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'home_page.dart';
+import 'api_config.dart';
 
 class RegistroPage extends StatefulWidget {
   @override
@@ -58,7 +59,7 @@ class _RegistroPageState extends State<RegistroPage> {
 
     try {
       final response = await http.post(
-        Uri.parse("http://localhost:3000/registrar"),
+        apiUri('/registrar'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "alias": aliasController.text,

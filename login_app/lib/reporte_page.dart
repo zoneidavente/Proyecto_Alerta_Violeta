@@ -5,6 +5,7 @@ import 'notificaciones_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
+import 'api_config.dart';
 
 class ReportePage extends StatefulWidget {
   final String alias;
@@ -131,7 +132,7 @@ class _ReportePageState extends State<ReportePage> {
       print(jsonEncode(bodyData));
 
       var response = await http.post(
-        Uri.parse("http://192.168.20.32:3000/reporte"),
+        apiUri('/reporte'),
 
         headers: {"Content-Type": "application/json"},
 
