@@ -388,27 +388,26 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
               ),
             ),
           ),
-          const Divider(height: 1, color: _border),
-          _paginacion(inicio, fin),
         ],
       ),
     );
   }
 
   Widget _filtros() {
-    return SizedBox(
-      height: 52,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (final filtro in _filtrosEstado)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: _filtroEstado(filtro),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          for (var i = 0; i < _filtrosEstado.length; i++)
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: i == _filtrosEstado.length - 1 ? 0 : 5,
+                ),
+                child: _filtroEstado(_filtrosEstado[i]),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
@@ -427,37 +426,45 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
           paginaActual = 0;
         }),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                filtro,
-                style: TextStyle(
-                  color: seleccionado ? Colors.white : const Color(0xFF594C64),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 7),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: seleccionado
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : const Color(0xFFF0EAF5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '$cantidad',
+          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 9),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  filtro,
                   style: TextStyle(
-                    color: seleccionado ? Colors.white : _purple,
+                    color: seleccionado
+                        ? Colors.white
+                        : const Color(0xFF594C64),
                     fontSize: 10,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 3),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: seleccionado
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : const Color(0xFFF0EAF5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$cantidad',
+                    style: TextStyle(
+                      color: seleccionado ? Colors.white : _purple,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -552,17 +559,16 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
     final reporte = elemento['dato'];
     final colorTipo = _colorTipo(elemento);
     final esAlerta = elemento['esAlerta'] as bool;
-    final descripcion = reporte['descripcion']?.toString().trim();
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: _border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -571,22 +577,28 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
                 Icon(
                   esAlerta ? Icons.warning_rounded : Icons.description_outlined,
                   color: colorTipo,
+                  size: 19,
                 ),
-                const SizedBox(width: 9),
+                const SizedBox(width: 7),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         _tituloElemento(elemento),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Color(0xFF39274A),
+                          fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(
                         _subtituloElemento(elemento),
-                        style: TextStyle(color: colorTipo, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: colorTipo, fontSize: 10),
                       ),
                     ],
                   ),
@@ -594,22 +606,54 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
                 _estadoDropdown(elemento),
               ],
             ),
-            const SizedBox(height: 12),
-            _detalle('Alias', reporte['alias']?.toString() ?? 'No disponible'),
-            _detalle('Ubicación', _ubicacion(reporte)),
-            _detalle('Fecha', _fecha(reporte['fecha']).replaceAll('\n', ' · ')),
-            if (!esAlerta && descripcion != null && descripcion.isNotEmpty)
-              _detalle('Descripción', descripcion),
-            Align(
-              alignment: Alignment.centerRight,
-              child: OutlinedButton(
-                onPressed: () => _verDetalle(elemento),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: _purple,
-                  side: const BorderSide(color: Color(0xFFD9CBE3)),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${reporte['alias']?.toString() ?? 'No disponible'} · '
+                    '${_fecha(reporte['fecha']).replaceAll('\n', ' ')}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF816A91),
+                      fontSize: 10,
+                    ),
+                  ),
                 ),
-                child: const Text('Ver detalle'),
-              ),
+                TextButton(
+                  onPressed: () => _verDetalle(elemento),
+                  style: TextButton.styleFrom(
+                    foregroundColor: _purple,
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    minimumSize: const Size(0, 30),
+                    textStyle: const TextStyle(fontSize: 10),
+                  ),
+                  child: const Text('Ver detalle'),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on_outlined,
+                  color: Color(0xFF816A91),
+                  size: 14,
+                ),
+                const SizedBox(width: 3),
+                Expanded(
+                  child: Text(
+                    _ubicacion(reporte),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF594C64),
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -671,6 +715,24 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
+      bottomNavigationBar: !cargando && error == null && _elementos.isNotEmpty
+          ? SafeArea(
+              top: false,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: _border)),
+                ),
+                child: _paginacion(
+                  paginaActual * _pageSize,
+                  (paginaActual * _pageSize + _pageSize).clamp(
+                    0,
+                    _elementosFiltrados.length,
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: cargando
           ? const Center(child: CircularProgressIndicator(color: _purple))
           : error != null
@@ -745,15 +807,6 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
                             side: const BorderSide(color: _border),
                           ),
                           child: _tablaReportes(),
-                        ),
-                      if (esPantallaCompacta)
-                        Card(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: _border),
-                          ),
-                          child: _paginacion(inicio, fin),
                         ),
                     ],
                   );

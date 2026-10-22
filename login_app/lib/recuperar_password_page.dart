@@ -21,12 +21,129 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
   bool isLoading = false;
   bool claveVerificada = false;
 
+  @override
+  void initState() {
+    super.initState();
+    aliasController.text = widget.alias;
+  }
+
+  @override
+  void dispose() {
+    aliasController.dispose();
+    recoveryController.dispose();
+    passwordController.dispose();
+    confirmController.dispose();
+    super.dispose();
+  }
+
   bool validarPassword(String password) {
     final regex = RegExp(
       r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#])[A-Za-z\d@$!%*?&.#]{8,}$',
     );
 
     return regex.hasMatch(password);
+  }
+
+  Future<void> _mostrarConfirmacionRecuperacion(String nuevaClave) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE9F7EE),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF21865B),
+                  size: 46,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                "Contraseña actualizada",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF321443),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                "Tu contraseña se cambió correctamente.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF665B6B),
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              if (nuevaClave.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3EDF5),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Tu nueva clave de recuperación",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF665B6B),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      SelectableText(
+                        nuevaClave,
+                        style: const TextStyle(
+                          color: Color(0xFF54216F),
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF7445A8),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text("Entendido"),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (mounted) Navigator.pop(context);
   }
 
   // VERIFICAR CLAVE DE RECUPERACIÓN
@@ -153,18 +270,8 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
       });
 
       if (data["success"]) {
-        String nuevaClave = data["recoveryCode"] ?? "";
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Contraseña actualizada. Tu nueva clave de recuperación es: $nuevaClave",
-            ),
-            duration: Duration(seconds: 6),
-          ),
-        );
-
-        Navigator.pop(context);
+        final nuevaClave = data["recoveryCode"]?.toString() ?? "";
+        await _mostrarConfirmacionRecuperacion(nuevaClave);
       } else {
         ScaffoldMessenger.of(
           context,

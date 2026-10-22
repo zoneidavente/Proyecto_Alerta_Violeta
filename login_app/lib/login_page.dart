@@ -26,14 +26,6 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  bool validarPassword(String password) {
-    final regex = RegExp(
-      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#])[A-Za-z\d@$!%*?&.#]{8,}$',
-    );
-
-    return regex.hasMatch(password);
-  }
-
   void irARegistro() {
     Navigator.push(
       context,
@@ -46,18 +38,6 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Completa todos los campos")));
-
-      return;
-    }
-
-    if (!validarPassword(passwordController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula, número y símbolo",
-          ),
-        ),
-      );
 
       return;
     }
@@ -77,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       var data = jsonDecode(response.body);
+      if (!mounted) return;
 
       if (data["success"]) {
         String role = data["role"] ?? "usuario";
@@ -88,13 +69,20 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(data["message"] ?? "Credenciales incorrectas"),
-          ),
-        );
+        final incorrectPassword = data["message"] == "Contraseña incorrecta";
+        if (incorrectPassword) {
+          final irARecuperacion = await _mostrarContrasenaIncorrecta();
+          if (irARecuperacion && mounted) recoverAccount();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data["message"] ?? "Credenciales incorrectas"),
+            ),
+          );
+        }
       }
     } catch (e) {
+      if (!mounted) return;
       print(e);
 
       ScaffoldMessenger.of(
@@ -102,9 +90,35 @@ class _LoginPageState extends State<LoginPage> {
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    if (mounted) setState(() => isLoading = false);
+  }
+
+  Future<bool> _mostrarContrasenaIncorrecta() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text("No se pudo iniciar sesión"),
+            content: Text(
+              "Hola, ${aliasController.text.trim()}. La contraseña ingresada "
+              "es incorrecta. Por seguridad, no podemos mostrar la contraseña "
+              "guardada. Puedes restablecerla con tu código de recuperación.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text("Entendido"),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text("Recuperar contraseña"),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   void recoverAccount() {

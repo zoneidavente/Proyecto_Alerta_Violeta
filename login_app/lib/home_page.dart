@@ -66,6 +66,8 @@ class _HomePageState extends State<HomePage> {
     }).length;
   }
 
+  List<dynamic> get _casosAdmin => [...reportesAdmin, ...alertasAdmin];
+
   List<Map<String, dynamic>> _actividadReciente() {
     final actividad = <Map<String, dynamic>>[
       ...reportesAdmin.map((reporte) => {"tipo": "Reporte", "dato": reporte}),
@@ -152,7 +154,7 @@ class _HomePageState extends State<HomePage> {
                               "Reportes pendientes",
                               cargandoResumen
                                   ? "—"
-                                  : "${_contarEstado(reportesAdmin, {"pendiente"})}",
+                                  : "${_contarEstado(_casosAdmin, {"pendiente"})}",
                               Icons.description_outlined,
                               naranja,
                               compacta: columnas < 4,
@@ -161,14 +163,14 @@ class _HomePageState extends State<HomePage> {
                               "Casos atendidos",
                               cargandoResumen
                                   ? "—"
-                                  : "${_contarEstado(reportesAdmin, {"atendido", "cerrado"})}",
+                                  : "${_contarEstado(_casosAdmin, {"atendido", "cerrado"})}",
                               Icons.task_alt,
                               violeta,
                               compacta: columnas < 4,
                             ),
                             _tarjetaResumen(
-                              "Reportes recibidos",
-                              cargandoResumen ? "—" : "${reportesAdmin.length}",
+                              "Casos recibidos",
+                              cargandoResumen ? "—" : "${_casosAdmin.length}",
                               Icons.assessment_outlined,
                               const Color(0xFF159A9A),
                               compacta: columnas < 4,
@@ -371,13 +373,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _botonGestionReportes(Color morado) {
-    final pendientes = _contarEstado(reportesAdmin, {"pendiente"});
-    final revision = _contarEstado(reportesAdmin, {
-      "en revisión",
-      "en_revision",
-    });
-    final atendidos = _contarEstado(reportesAdmin, {"atendido", "cerrado"});
-    final total = reportesAdmin.length;
+    final pendientes = _contarEstado(_casosAdmin, {"pendiente"});
+    final revision = _contarEstado(_casosAdmin, {"en revisión", "en_revision"});
+    final atendidos = _contarEstado(_casosAdmin, {"atendido", "cerrado"});
+    final total = _casosAdmin.length;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

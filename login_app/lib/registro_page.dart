@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'home_page.dart';
 import 'api_config.dart';
 
 class RegistroPage extends StatefulWidget {
@@ -16,6 +15,16 @@ class _RegistroPageState extends State<RegistroPage> {
   final TextEditingController confirmarController = TextEditingController();
 
   bool isLoading = false;
+  bool passwordVisible = false;
+  bool confirmPasswordVisible = false;
+
+  @override
+  void dispose() {
+    aliasController.dispose();
+    passwordController.dispose();
+    confirmarController.dispose();
+    super.dispose();
+  }
 
   bool validarPassword(String password) {
     final regex = RegExp(
@@ -68,17 +77,18 @@ class _RegistroPageState extends State<RegistroPage> {
       );
 
       final data = jsonDecode(response.body);
+      if (!mounted) return;
 
       if (data["success"]) {
         final recoveryCode = data["recoveryCode"]?.toString() ?? "";
 
-        showDialog(
+        final irAlInicioSesion = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
-          builder: (context) {
+          builder: (dialogContext) {
             return Dialog(
               insetPadding: EdgeInsets.symmetric(horizontal: 18),
-              backgroundColor: Color(0xFFF7F0F9),
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
@@ -171,58 +181,59 @@ class _RegistroPageState extends State<RegistroPage> {
 
                     SizedBox(height: 18),
 
-                    Row(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Clipboard.setData(
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            try {
+                              await Clipboard.setData(
                                 ClipboardData(text: recoveryCode),
                               );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
+                              if (!dialogContext.mounted) return;
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                const SnackBar(
                                   content: Text("Código copiado"),
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
-                            },
-                            icon: Icon(Icons.copy_all_outlined, size: 18),
-                            label: Text("Copiar código"),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Color(0xFF4B2D5D),
-                              side: BorderSide(color: Color(0xFFB39AC4)),
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                            } catch (error) {
+                              debugPrint("No se pudo copiar el código: $error");
+                              if (!dialogContext.mounted) return;
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "No se pudo copiar el código. Anótalo en un lugar seguro.",
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                          icon: Icon(Icons.copy_all_outlined, size: 18),
+                          label: Text("Copiar código"),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Color(0xFF4B2D5D),
+                            side: BorderSide(color: Color(0xFFB39AC4)),
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => HomePage(
-                                    alias: aliasController.text,
-                                    role: "Usuario",
-                                  ),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF6C3A7A),
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                        SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () =>
+                              Navigator.of(dialogContext).pop(true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF6C3A7A),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text("Continuar"),
                           ),
+                          child: Text("Ir al inicio de sesión"),
                         ),
                       ],
                     ),
@@ -232,17 +243,27 @@ class _RegistroPageState extends State<RegistroPage> {
             );
           },
         );
+        if (!mounted) return;
+        setState(() {
+          isLoading = false;
+        });
+        if (irAlInicioSesion == true) {
+          Navigator.of(context).pop();
+        }
+        return;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data["message"] ?? "No se pudo registrar")),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error de conexión")));
     }
 
+    if (!mounted) return;
     setState(() {
       isLoading = false;
     });
@@ -393,7 +414,21 @@ class _RegistroPageState extends State<RegistroPage> {
                         controller: passwordController,
                         hintText: "Contraseña",
                         icon: Icons.lock_outline_rounded,
-                        obscureText: true,
+                        obscureText: !passwordVisible,
+                        suffixIcon: IconButton(
+                          tooltip: passwordVisible
+                              ? "Ocultar contraseña"
+                              : "Mostrar contraseña",
+                          onPressed: () => setState(
+                            () => passwordVisible = !passwordVisible,
+                          ),
+                          icon: Icon(
+                            passwordVisible
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: moradoTexto,
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 16),
@@ -402,7 +437,22 @@ class _RegistroPageState extends State<RegistroPage> {
                         controller: confirmarController,
                         hintText: "Confirmar contraseña",
                         icon: Icons.lock_outline_rounded,
-                        obscureText: true,
+                        obscureText: !confirmPasswordVisible,
+                        suffixIcon: IconButton(
+                          tooltip: confirmPasswordVisible
+                              ? "Ocultar contraseña"
+                              : "Mostrar contraseña",
+                          onPressed: () => setState(
+                            () => confirmPasswordVisible =
+                                !confirmPasswordVisible,
+                          ),
+                          icon: Icon(
+                            confirmPasswordVisible
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: moradoTexto,
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 24),
@@ -449,6 +499,7 @@ class _RegistroPageState extends State<RegistroPage> {
     required String hintText,
     required IconData icon,
     required bool obscureText,
+    Widget? suffixIcon,
   }) {
     return TextField(
       controller: controller,
@@ -458,6 +509,7 @@ class _RegistroPageState extends State<RegistroPage> {
         filled: true,
         fillColor: Colors.white,
         prefixIcon: Icon(icon, color: const Color(0xFF7445A8), size: 22),
+        suffixIcon: suffixIcon,
         contentPadding: const EdgeInsets.symmetric(vertical: 13),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

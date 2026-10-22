@@ -44,19 +44,37 @@ class _MapaPageState extends State<MapaPage> {
 
   Future<void> obtenerReportes() async {
     try {
-      var response = await http.get(
-        apiUri('/reporte'),
-      );
-
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-
-        if (data is List) {
-          setState(() {
-            reportes = data;
-          });
-        }
+      final responses = await Future.wait([
+        http.get(apiUri('/reporte')),
+        http.get(apiUri('/emergencia')),
+      ]);
+      if (responses.any((response) => response.statusCode != 200)) {
+        throw Exception('No se pudieron cargar reportes y alertas SOS.');
       }
+
+      final reportesData = jsonDecode(responses[0].body);
+      final alertasData = jsonDecode(responses[1].body);
+      if (reportesData is! List || alertasData is! List) {
+        throw const FormatException(
+          'La respuesta de ubicaciones no es válida.',
+        );
+      }
+
+      final ubicaciones = <Map<String, dynamic>>[
+        ...reportesData.map(
+          (item) => {
+            ...Map<String, dynamic>.from(item),
+            'categoria': 'Reporte',
+          },
+        ),
+        ...alertasData.map(
+          (item) => {...Map<String, dynamic>.from(item), 'categoria': 'SOS'},
+        ),
+      ];
+      if (!mounted) return;
+      setState(() {
+        reportes = ubicaciones;
+      });
     } catch (e) {
       print("Error obteniendo reportes: $e");
     }
@@ -184,7 +202,7 @@ class _MapaPageState extends State<MapaPage> {
     List<CircleMarker> zonas = [];
 
     for (var reporte in reportes) {
-      if (reporte["latitud"] == null || reporte["longitud"] == null) {
+      if (!_tieneCoordenadas(reporte)) {
         continue;
       }
 
@@ -216,6 +234,30 @@ class _MapaPageState extends State<MapaPage> {
     return zonas;
   }
 
+  List<CircleMarker> construirZonasSos() {
+    return reportes
+        .where((reporte) {
+          return reporte["categoria"] == "SOS" && _tieneCoordenadas(reporte);
+        })
+        .map((alerta) {
+          return CircleMarker(
+            point: LatLng(
+              (alerta["latitud"] as num).toDouble(),
+              (alerta["longitud"] as num).toDouble(),
+            ),
+            radius: 180,
+            useRadiusInMeter: true,
+            color: Colors.red.withValues(alpha: 0.24),
+            borderColor: Colors.red,
+            borderStrokeWidth: 4,
+          );
+        })
+        .toList();
+  }
+
+  bool _tieneCoordenadas(dynamic elemento) =>
+      elemento["latitud"] is num && elemento["longitud"] is num;
+
   // =====================================================
   // CREAR MARCADORES DE REPORTES
   // =====================================================
@@ -224,7 +266,7 @@ class _MapaPageState extends State<MapaPage> {
     return reportes
         .where(
           (reporte) =>
-              reporte["latitud"] != null && reporte["longitud"] != null,
+              reporte["categoria"] != "SOS" && _tieneCoordenadas(reporte),
         )
         .map<Marker>((reporte) {
           double lat = (reporte["latitud"] as num).toDouble();
@@ -247,6 +289,66 @@ class _MapaPageState extends State<MapaPage> {
               },
 
               child: Icon(Icons.warning_rounded, color: color, size: 35),
+            ),
+          );
+        })
+        .toList();
+  }
+
+  List<Marker> construirMarcadoresSos() {
+    return reportes
+        .where((alerta) {
+          return alerta["categoria"] == "SOS" && _tieneCoordenadas(alerta);
+        })
+        .map<Marker>((alerta) {
+          final nivel = determinarNivelRiesgo(alerta);
+          return Marker(
+            width: 56,
+            height: 62,
+            point: LatLng(
+              (alerta["latitud"] as num).toDouble(),
+              (alerta["longitud"] as num).toDouble(),
+            ),
+            child: GestureDetector(
+              onTap: () => mostrarInformacionReporte(alerta, nivel),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x66000000),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.sos_rounded,
+                      color: Colors.white,
+                      size: 25,
+                    ),
+                  ),
+                  const Text(
+                    "SOS",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      shadows: [
+                        Shadow(color: Colors.white, blurRadius: 3),
+                        Shadow(color: Colors.white, blurRadius: 3),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         })
@@ -286,6 +388,7 @@ class _MapaPageState extends State<MapaPage> {
   // =====================================================
 
   void mostrarInformacionReporte(dynamic reporte, String nivel) {
+    final esSos = reporte["categoria"] == "SOS";
     showModalBottomSheet(
       context: context,
 
@@ -300,7 +403,7 @@ class _MapaPageState extends State<MapaPage> {
 
             children: [
               Text(
-                "Zona de riesgo",
+                esSos ? "Alerta SOS" : "Reporte de acoso",
 
                 style: TextStyle(
                   fontSize: 20,
@@ -324,8 +427,9 @@ class _MapaPageState extends State<MapaPage> {
               SizedBox(height: 10),
 
               Text(
-                "Tipo de acoso: "
-                "${reporte["tipo_acoso"] ?? "No disponible"}",
+                esSos
+                    ? "Tipo: Alerta de emergencia"
+                    : "Tipo de acoso: ${reporte["tipo_acoso"] ?? "No disponible"}",
               ),
 
               SizedBox(height: 10),
@@ -339,7 +443,7 @@ class _MapaPageState extends State<MapaPage> {
 
               Text(
                 "Descripción: "
-                "${reporte["descripcion"] ?? "No disponible"}",
+                "${reporte["descripcion"] ?? (esSos ? "Alerta SOS enviada." : "No disponible")}",
               ),
 
               SizedBox(height: 20),
@@ -559,6 +663,7 @@ class _MapaPageState extends State<MapaPage> {
 
                                 // ZONAS DE RIESGO
                                 CircleLayer(circles: construirZonasRiesgo()),
+                                CircleLayer(circles: construirZonasSos()),
 
                                 // MARCADORES
                                 MarkerLayer(
@@ -566,6 +671,7 @@ class _MapaPageState extends State<MapaPage> {
                                     ...construirMarcadoresReportes(),
 
                                     ...construirMarcadorUbicacion(),
+                                    ...construirMarcadoresSos(),
                                   ],
                                 ),
                               ],
