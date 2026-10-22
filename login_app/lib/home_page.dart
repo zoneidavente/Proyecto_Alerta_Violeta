@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:math' as math;
 import 'reporte_page.dart';
 import 'mapa_page.dart';
@@ -8,6 +9,7 @@ import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'administrar_reportes_page.dart';
 import 'api_config.dart';
+import 'notification_service.dart';
 
 class HomePage extends StatefulWidget {
   final String alias;
@@ -28,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    unawaited(AppNotificationService.instance.start());
     if (widget.role == "administrador") {
       cargarResumenAdmin();
     }
@@ -132,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                         builder: (context, constraints) {
                           final columnas = constraints.maxWidth >= 1100
                               ? 4
-                              : constraints.maxWidth >= 620
+                              : constraints.maxWidth >= 280
                               ? 2
                               : 1;
                           final tarjetas = <Widget>[
@@ -143,6 +146,7 @@ class _HomePageState extends State<HomePage> {
                                   : "${_contarEstado(alertasAdmin, {"pendiente", "en revisión"})}",
                               Icons.notifications_active_outlined,
                               rojo,
+                              compacta: columnas < 4,
                             ),
                             _tarjetaResumen(
                               "Reportes pendientes",
@@ -151,6 +155,7 @@ class _HomePageState extends State<HomePage> {
                                   : "${_contarEstado(reportesAdmin, {"pendiente"})}",
                               Icons.description_outlined,
                               naranja,
+                              compacta: columnas < 4,
                             ),
                             _tarjetaResumen(
                               "Casos atendidos",
@@ -159,12 +164,14 @@ class _HomePageState extends State<HomePage> {
                                   : "${_contarEstado(reportesAdmin, {"atendido", "cerrado"})}",
                               Icons.task_alt,
                               violeta,
+                              compacta: columnas < 4,
                             ),
                             _tarjetaResumen(
                               "Reportes recibidos",
                               cargandoResumen ? "—" : "${reportesAdmin.length}",
                               Icons.assessment_outlined,
                               const Color(0xFF159A9A),
+                              compacta: columnas < 4,
                             ),
                           ];
                           final espacio = columnas == 1 ? 10.0 : 14.0;
@@ -221,11 +228,12 @@ class _HomePageState extends State<HomePage> {
     String titulo,
     String valor,
     IconData icono,
-    Color color,
-  ) {
+    Color color, {
+    bool compacta = false,
+  }) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 132),
-      padding: const EdgeInsets.all(18),
+      constraints: BoxConstraints(minHeight: compacta ? 92 : 132),
+      padding: EdgeInsets.all(compacta ? 12 : 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -241,15 +249,15 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         children: [
           Container(
-            width: 58,
-            height: 58,
+            width: compacta ? 40 : 58,
+            height: compacta ? 40 : 58,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icono, color: color, size: 29),
+            child: Icon(icono, color: color, size: compacta ? 21 : 29),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: compacta ? 8 : 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,9 +265,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text(
                   titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Color(0xFF39274A),
-                    fontSize: 13,
+                    fontSize: compacta ? 11 : 13,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -268,7 +276,7 @@ class _HomePageState extends State<HomePage> {
                   valor,
                   style: TextStyle(
                     color: color,
-                    fontSize: 29,
+                    fontSize: compacta ? 23 : 29,
                     height: 1.05,
                     fontWeight: FontWeight.w800,
                   ),

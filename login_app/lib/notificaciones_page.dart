@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'mapa_page.dart';
-import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
 import 'dart:async';
-import 'package:audioplayers/audioplayers.dart';
 
-import 'dart:convert';
-import 'api_config.dart';
+import 'notification_service.dart';
 
 class NotificacionesPage extends StatefulWidget {
   final String alias;
@@ -20,15 +17,13 @@ class NotificacionesPage extends StatefulWidget {
 }
 
 class _NotificacionesPageState extends State<NotificacionesPage> {
-  List notificaciones = [];
+  List<dynamic> notificaciones = [];
 
   int currentIndex = 1;
 
-  final AudioPlayer audioPlayer = AudioPlayer();
-  Timer? timerNotificaciones;
-
-  Set<String> idsNotificaciones = {};
-  bool primeraCarga = true;
+  final AppNotificationService notificationService =
+      AppNotificationService.instance;
+  StreamSubscription<List<dynamic>>? notificacionesSubscription;
   String filtroActual = "Todas";
 
   String obtenerTiempo(String fecha) {
@@ -37,86 +32,26 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
     return timeago.format(fechaReporte, locale: "es");
   }
 
-  Future<void> cargarNotificaciones() async {
-    try {
-      // REPORTES
-      var reporteResponse = await http.get(
-        apiUri('/reporte'),
-      );
-
-      // ALERTAS SOS
-      var emergenciaResponse = await http.get(
-        apiUri('/emergencia'),
-      );
-
-      List reportes = jsonDecode(reporteResponse.body);
-
-      List emergencias = jsonDecode(emergenciaResponse.body);
-
-      // AGREGAR TIPO A CADA ELEMENTO
-      reportes = reportes.map((e) {
-        e["categoria"] = "Reporte";
-        return e;
-      }).toList();
-
-      emergencias = emergencias.map((e) {
-        e["categoria"] = "SOS";
-        return e;
-      }).toList();
-
-      List todas = [...reportes, ...emergencias];
-
-      // ORDENAR POR FECHA MÁS RECIENTE
-      todas.sort((a, b) {
-        DateTime fechaA = DateTime.parse(a["fecha"]);
-
-        DateTime fechaB = DateTime.parse(b["fecha"]);
-
-        return fechaB.compareTo(fechaA);
-      });
-
-      // Crear identificadores para detectar nuevas notificaciones
-      Set<String> nuevosIds = todas.map((item) {
-        return item["_id"]?.toString() ?? item["fecha"].toString();
-      }).toSet();
-
-      // Si no es la primera carga y apareció una nueva notificación
-      if (!primeraCarga) {
-        bool hayNueva = nuevosIds.difference(idsNotificaciones).isNotEmpty;
-
-        if (hayNueva) {
-          await audioPlayer.play(AssetSource('alertaSonido.mp3'));
-        }
-      }
-
-      setState(() {
-        notificaciones = todas;
-      });
-
-      idsNotificaciones = nuevosIds;
-      primeraCarga = false;
-    } catch (e) {
-      print("Error: $e");
-    }
-  }
-
   @override
   void initState() {
     super.initState();
 
     timeago.setLocaleMessages('es', timeago.EsMessages());
-
-    cargarNotificaciones();
-
-    timerNotificaciones = Timer.periodic(const Duration(seconds: 5), (timer) {
-      cargarNotificaciones();
+    notificaciones = notificationService.currentNotifications;
+    notificacionesSubscription = notificationService.notifications.listen((
+      nuevasNotificaciones,
+    ) {
+      if (!mounted) return;
+      setState(() {
+        notificaciones = nuevasNotificaciones;
+      });
     });
+    unawaited(notificationService.start());
   }
 
   @override
   void dispose() {
-    timerNotificaciones?.cancel();
-    audioPlayer.dispose();
+    notificacionesSubscription?.cancel();
     super.dispose();
   }
 
@@ -246,7 +181,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 34),
+                  SizedBox(height: 24),
                   Row(
                     children: [
                       _buildFiltro("Todas"),

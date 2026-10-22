@@ -39,53 +39,145 @@ class _ReportePageState extends State<ReportePage> {
   final TextEditingController descripcionController = TextEditingController();
 
   // OBTENER UBICACIÓN
-  Future<void> obtenerUbicacion() async {
-    bool servicioHabilitado;
-    LocationPermission permiso;
+  Future<bool> obtenerUbicacion() async {
+    latitud = null;
+    longitud = null;
+    direccion = "";
 
-    servicioHabilitado = await Geolocator.isLocationServiceEnabled();
-
-    if (!servicioHabilitado) {
-      return;
-    }
-
-    permiso = await Geolocator.checkPermission();
-
-    if (permiso == LocationPermission.denied) {
-      permiso = await Geolocator.requestPermission();
-
-      if (permiso == LocationPermission.denied) {
-        return;
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        _mostrarMensajeUbicacion(
+          "Activa los servicios de ubicación para enviar el reporte.",
+        );
+        return false;
       }
+
+      var permiso = await Geolocator.checkPermission();
+      if (permiso == LocationPermission.denied) {
+        permiso = await Geolocator.requestPermission();
+      }
+
+      if (permiso != LocationPermission.whileInUse &&
+          permiso != LocationPermission.always) {
+        _mostrarMensajeUbicacion(
+          permiso == LocationPermission.deniedForever
+              ? "Debes habilitar el permiso de ubicación en la configuración."
+              : "Debes conceder el permiso de ubicación para enviar el reporte.",
+        );
+        return false;
+      }
+
+      final posicion = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      latitud = posicion.latitude;
+      longitud = posicion.longitude;
+    } catch (error) {
+      debugPrint("No se pudo obtener la ubicación: $error");
+      _mostrarMensajeUbicacion(
+        "No se pudo obtener tu ubicación. Inténtalo de nuevo.",
+      );
+      return false;
     }
 
-    if (permiso == LocationPermission.deniedForever) {
-      return;
-    }
-
-    Position posicion = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
-    latitud = posicion.latitude;
-    longitud = posicion.longitude;
-
-    // DIRECCIÓN REAL CON NOMINATIM
     final url =
         "https://nominatim.openstreetmap.org/reverse"
         "?format=json"
         "&lat=$latitud"
         "&lon=$longitud";
 
-    final response = await http.get(
-      Uri.parse(url),
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {"User-Agent": "alerta_violeta_app"},
+      );
 
-      headers: {"User-Agent": "alerta_violeta_app"},
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        direccion = data["display_name"] ?? "";
+      } else {
+        _mostrarMensajeUbicacion(
+          "Se obtuvo la ubicación, pero no se pudo consultar la dirección. "
+          "El reporte se enviará con las coordenadas.",
+        );
+      }
+    } catch (error) {
+      debugPrint("No se pudo consultar la dirección: $error");
+      _mostrarMensajeUbicacion(
+        "Se obtuvo la ubicación, pero no se pudo consultar la dirección. "
+        "El reporte se enviará con las coordenadas.",
+      );
+    }
+
+    return latitud != null && longitud != null;
+  }
+
+  void _mostrarMensajeUbicacion(String mensaje) {
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1E5F8),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.location_on_rounded,
+                  color: Color(0xFF843AC0),
+                  size: 34,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Aviso de ubicación",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF3C154E),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                mensaje,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF665B6B),
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF843AC0),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text("Entendido"),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-
-    final data = jsonDecode(response.body);
-
-    direccion = data["display_name"] ?? "Dirección no encontrada";
   }
 
   // ENVIAR REPORTE
@@ -106,13 +198,14 @@ class _ReportePageState extends State<ReportePage> {
       return;
     }
 
-    if (compartirUbicacion) {
-      await obtenerUbicacion();
-    } else {
-      latitud = null;
-      longitud = null;
-      direccion = "";
+    if (!compartirUbicacion) {
+      _mostrarMensajeUbicacion(
+        "Activa «Compartir mi ubicación actual» para enviar el reporte.",
+      );
+      return;
     }
+
+    if (!await obtenerUbicacion() || !mounted || !compartirUbicacion) return;
 
     try {
       Map<String, dynamic> bodyData = {
@@ -420,7 +513,7 @@ class _ReportePageState extends State<ReportePage> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "Solo se incluirá en este reporte.",
+                                                  "Necesaria para enviar el reporte.",
                                                   style: TextStyle(
                                                     color: Color(0xFF806D8B),
                                                     fontSize: 9,
