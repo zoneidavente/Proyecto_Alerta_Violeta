@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 
 const User = require("../models/User");
+const Session = require("../models/Session");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const { hashSessionToken } = require("../utils/sessionToken");
 
 // LOGIN
 router.post("/login", async (req, res) => {
@@ -37,11 +40,19 @@ router.post("/login", async (req, res) => {
         );
 
         if (passwordValida) {
+            const token = crypto.randomBytes(32).toString("hex");
+            const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+            await Session.create({
+                userId: user._id,
+                tokenHash: hashSessionToken(token),
+                expiresAt,
+            });
 
             return res.json({
                 success: true,
                 message: "Inicio de sesión exitoso",
-                role: user.role
+                role: user.role,
+                token,
             });
 
         } else {
@@ -198,6 +209,7 @@ router.post("/registrar", async (req, res) => {
             alias,
             password,
             recoveryCode,
+            createdAt: new Date(),
         });
 
         await user.save();

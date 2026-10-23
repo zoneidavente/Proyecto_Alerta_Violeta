@@ -20,7 +20,7 @@ class MapaPage extends StatefulWidget {
 }
 
 class _MapaPageState extends State<MapaPage> {
-  int currentIndex = 2;
+  int get currentIndex => widget.role == "usuario" ? 2 : 1;
 
   List reportes = [];
 
@@ -745,6 +745,10 @@ class _MapaPageState extends State<MapaPage> {
                 break;
 
               case 2:
+                // El mapa ya está seleccionado.
+                break;
+
+              case 3:
                 // Ayuda
                 break;
             }
@@ -793,6 +797,10 @@ class _MapaPageState extends State<MapaPage> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.notifications),
                   label: "Notificaciones",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.location_on),
+                  label: "Mapa",
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.support_agent),

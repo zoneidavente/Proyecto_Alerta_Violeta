@@ -2,6 +2,13 @@ const mongoose = require("mongoose");
 
 const ReporteSchema = new mongoose.Schema({
 
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        immutable: true,
+        index: true,
+    },
+
     alias: {
         type: String,
         required: true,

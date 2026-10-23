@@ -21,12 +21,42 @@ class AppNotificationService {
   Set<String> _notificationIds = {};
   bool _firstLoad = true;
   bool _isLoading = false;
+  int _generation = 0;
+  String? _alias;
+  Timer? _refreshTimer;
 
   Stream<List<dynamic>> get notifications => _notificationsController.stream;
   List<dynamic> get currentNotifications => _notifications;
-  Future<void> start() => _startFuture ??= _start();
+
+  void stop() {
+    _generation++;
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+    _startFuture = null;
+    _alias = null;
+    _notifications = [];
+    _notificationIds = {};
+    _firstLoad = true;
+    _notificationsController.add(_notifications);
+  }
+
+  Future<void> start(String alias) {
+    final normalizedAlias = alias.trim();
+    if (_alias != normalizedAlias) {
+      _alias = normalizedAlias;
+      _notifications = [];
+      _notificationIds = {};
+      _firstLoad = true;
+      _notificationsController.add(_notifications);
+      if (_refreshTimer != null) {
+        unawaited(_loadNotifications());
+      }
+    }
+    return _startFuture ??= _start();
+  }
 
   Future<void> _start() async {
+    final generation = _generation;
     try {
       await _audioPlayer.setReleaseMode(ReleaseMode.stop);
       await _audioPlayer.setSource(AssetSource('sonido_notificacion.mp3'));
@@ -35,7 +65,11 @@ class AppNotificationService {
     }
 
     await _loadNotifications();
-    Timer.periodic(const Duration(seconds: 5), (_) => _loadNotifications());
+    if (generation != _generation || _alias == null) return;
+    _refreshTimer ??= Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _loadNotifications(),
+    );
   }
 
   Future<void> _loadNotifications() async {
@@ -43,10 +77,23 @@ class AppNotificationService {
     _isLoading = true;
 
     try {
+      final alias = _alias;
+      if (alias == null || alias.isEmpty) {
+        throw StateError('Se requiere el alias para cargar notificaciones.');
+      }
       final responses = await Future.wait([
-        http.get(apiUri('/reporte')),
-        http.get(apiUri('/emergencia')),
+        http.get(
+          apiUri('/reporte').replace(
+            queryParameters: {'scope': 'notifications', 'alias': alias},
+          ),
+        ),
+        http.get(
+          apiUri('/emergencia').replace(
+            queryParameters: {'scope': 'notifications', 'alias': alias},
+          ),
+        ),
       ]);
+      if (_alias != alias) return;
       if (responses.any((response) => response.statusCode != 200)) {
         throw Exception('El servidor no pudo cargar las notificaciones.');
       }
@@ -59,7 +106,17 @@ class AppNotificationService {
         responses[1].body,
         'Alerta SOS',
       ).map((item) => {...item, 'categoria': 'SOS'});
-      final nuevasNotificaciones = [...reportes, ...emergencias];
+      final now = DateTime.now().toUtc();
+      final recientes = [
+        ...reportes,
+        ...emergencias,
+      ].where((item) => isWithinNotificationWindow(item, now: now));
+      final uniqueNotifications = <String, Map<String, dynamic>>{};
+      for (final item in recientes) {
+        final id = '${item['categoria']}:${item['_id'] ?? item['fecha'] ?? ''}';
+        uniqueNotifications.putIfAbsent(id, () => item);
+      }
+      final nuevasNotificaciones = uniqueNotifications.values.toList();
 
       nuevasNotificaciones.sort((a, b) {
         final fechaA = DateTime.tryParse(a['fecha']?.toString() ?? '');
@@ -111,4 +168,22 @@ class AppNotificationService {
       debugPrint("No se pudo reproducir el sonido de notificación: $error");
     }
   }
+}
+
+bool isWithinNotificationWindow(dynamic item, {DateTime? now}) {
+  if (item is! Map) return false;
+  final fecha = DateTime.tryParse(item['fecha']?.toString() ?? '');
+  if (fecha == null) return false;
+
+  final instant = (now ?? DateTime.now().toUtc()).toUtc();
+  final colombiaNow = instant.subtract(const Duration(hours: 5));
+  final startOfYesterdayUtc = DateTime.utc(
+    colombiaNow.year,
+    colombiaNow.month,
+    colombiaNow.day - 1,
+    5,
+  );
+  final fechaUtc = fecha.toUtc();
+
+  return !fechaUtc.isBefore(startOfYesterdayUtc) && !fechaUtc.isAfter(instant);
 }

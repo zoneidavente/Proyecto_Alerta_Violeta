@@ -2,6 +2,13 @@ const mongoose = require("mongoose");
 
 const EmergenciaSchema = new mongoose.Schema({
 
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        immutable: true,
+        index: true,
+    },
+
     alias: {
         type: String,
         required: true,

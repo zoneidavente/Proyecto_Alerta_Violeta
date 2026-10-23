@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'api_config.dart';
+import 'app_session.dart';
 
 class ReportePage extends StatefulWidget {
   final String alias;
@@ -209,8 +210,6 @@ class _ReportePageState extends State<ReportePage> {
 
     try {
       Map<String, dynamic> bodyData = {
-        "alias": widget.alias,
-
         "tipo_acoso": tipoAcoso,
 
         "descripcion": descripcionController.text.trim(),
@@ -226,8 +225,7 @@ class _ReportePageState extends State<ReportePage> {
 
       var response = await http.post(
         apiUri('/reporte'),
-
-        headers: {"Content-Type": "application/json"},
+        headers: AppSession.authHeaders(json: true),
 
         body: jsonEncode(bodyData),
       );
@@ -624,7 +622,15 @@ class _ReportePageState extends State<ReportePage> {
                 break;
 
               case 2:
-                // Ayuda
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MapaPage(alias: widget.alias, role: widget.role),
+                  ),
+                );
+                break;
+              case 3:
                 break;
             }
           } else {
@@ -672,6 +678,10 @@ class _ReportePageState extends State<ReportePage> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.notifications),
                   label: "Notificaciones",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.location_on),
+                  label: "Mapa",
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.support_agent),

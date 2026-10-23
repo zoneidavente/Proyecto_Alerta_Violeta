@@ -37,7 +37,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
     super.initState();
 
     timeago.setLocaleMessages('es', timeago.EsMessages());
-    notificaciones = notificationService.currentNotifications;
+    notificaciones = [];
     notificacionesSubscription = notificationService.notifications.listen((
       nuevasNotificaciones,
     ) {
@@ -46,7 +46,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
         notificaciones = nuevasNotificaciones;
       });
     });
-    unawaited(notificationService.start());
+    unawaited(notificationService.start(widget.alias));
   }
 
   @override
@@ -57,46 +57,40 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
 
   Widget _buildFiltro(String label) {
     final bool seleccionado = filtroActual == label;
+    const colorIconoNotificaciones = Color(0xFF3C154E);
 
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () {
           setState(() {
             filtroActual = label;
           });
         },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          margin: const EdgeInsets.only(right: 5),
-          decoration: BoxDecoration(
-            color: seleccionado
-                ? Color(0xFFB68BC7)
-                : Colors.white.withOpacity(0.7),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: seleccionado ? Color(0xFFB68BC7) : Color(0xFFE5D9ED),
-            ),
-            boxShadow: seleccionado
-                ? [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: seleccionado ? Colors.white : Color(0xFF5B3B69),
-                  fontFamily: 'Poppins',
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colorIconoNotificaciones,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                height: 2,
+                width: double.infinity,
+                color: seleccionado
+                    ? colorIconoNotificaciones
+                    : Colors.transparent,
               ),
             ],
           ),
@@ -111,15 +105,18 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
     Color moradoSuave = Color(0xFFAB8FB8);
     Color moradoIconos = Color.fromARGB(255, 60, 21, 78);
 
+    final recientes = notificaciones
+        .where((item) => isWithinNotificationWindow(item))
+        .toList();
     List notificacionesFiltradas = [];
     if (filtroActual == "Todas") {
-      notificacionesFiltradas = notificaciones;
+      notificacionesFiltradas = recientes;
     } else if (filtroActual == "SOS") {
-      notificacionesFiltradas = notificaciones
+      notificacionesFiltradas = recientes
           .where((item) => item["categoria"] == "SOS")
           .toList();
     } else {
-      notificacionesFiltradas = notificaciones
+      notificacionesFiltradas = recientes
           .where((item) => item["categoria"] == "Reporte")
           .toList();
     }
@@ -181,12 +178,12 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   Row(
                     children: [
                       _buildFiltro("Todas"),
                       _buildFiltro("SOS"),
-                      _buildFiltro("Reportes"),
+                      _buildFiltro("Reporte"),
                     ],
                   ),
                   SizedBox(height: 18),
@@ -383,6 +380,15 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
                 );
                 break;
               case 2:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MapaPage(alias: widget.alias, role: widget.role),
+                  ),
+                );
+                break;
+              case 3:
                 break;
             }
           } else {
@@ -423,6 +429,10 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.notifications),
                   label: "Notificaciones",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.location_on),
+                  label: "Mapa",
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.support_agent),

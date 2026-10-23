@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'recuperar_password_page.dart';
 import 'registro_page.dart';
 import 'api_config.dart';
+import 'app_session.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -60,6 +61,13 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (data["success"]) {
+        final token = data["token"]?.toString();
+        if (token == null || token.isEmpty) {
+          throw const FormatException(
+            "El servidor no devolvió una sesión válida.",
+          );
+        }
+        AppSession.establish(token);
         String role = data["role"] ?? "usuario";
         Navigator.pushReplacement(
           context,
@@ -208,14 +216,18 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            CircleAvatar(
-                              radius: 29,
-                              backgroundColor: moradoSuave.withOpacity(0.2),
-                              child: Icon(
-                                Icons.person,
-                                size: 34,
-                                color: moradoTexto,
-                              ),
+                            Image.asset(
+                              'assets/logo_inicio.png',
+                              width: 64,
+                              height: 64,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.image_outlined,
+                                  size: 34,
+                                  color: moradoTexto,
+                                );
+                              },
                             ),
                             const SizedBox(height: 12),
                             const Text(

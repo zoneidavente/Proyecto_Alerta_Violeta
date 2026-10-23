@@ -10,6 +10,9 @@ import 'package:geolocator/geolocator.dart';
 import 'administrar_reportes_page.dart';
 import 'api_config.dart';
 import 'notification_service.dart';
+import 'app_session.dart';
+import 'mis_reportes_page.dart';
+import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
   final String alias;
@@ -30,7 +33,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    unawaited(AppNotificationService.instance.start());
+    unawaited(AppNotificationService.instance.start(widget.alias));
     if (widget.role == "administrador") {
       cargarResumenAdmin();
     }
@@ -581,9 +584,8 @@ class _HomePageState extends State<HomePage> {
       // ENVIAR ALERTA AL BACKEND
       final respuesta = await http.post(
         apiUri('/emergencia'),
-        headers: {"Content-Type": "application/json"},
+        headers: AppSession.authHeaders(json: true),
         body: jsonEncode({
-          "alias": widget.alias,
           "latitud": latitud,
           "longitud": longitud,
           "direccion": direccion,
@@ -788,247 +790,566 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _abrirPerfil() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => SafeArea(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFAF8FC),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF64318B), Color(0xFF8C56BD)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Column(
+                  children: [
+                    const CircleAvatar(
+                      radius: 36,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        size: 42,
+                        color: Color(0xFF704092),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.alias,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    const Text(
+                      'Tu perfil',
+                      style: TextStyle(
+                        color: Color(0xFFE9DDF3),
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.description_outlined,
+                  color: Color(0xFF60317D),
+                ),
+                title: const Text(
+                  'Mis reportes',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MisReportesPage(alias: widget.alias),
+                    ),
+                  );
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Color(0xFFB3261E)),
+                title: const Text(
+                  'Cerrar sesión',
+                  style: TextStyle(
+                    color: Color(0xFFB3261E),
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  AppNotificationService.instance.stop();
+                  AppSession.clear();
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => LoginPage()),
+                    (_) => false,
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _construirInicioUsuario() {
+    const lavanda = Color(0xFFF3EDF5);
+    const moradoSuave = Color(0xFFAB8FB8);
+
+    return Stack(
+      children: [
+        Container(color: lavanda),
+        Positioned(
+          top: -290,
+          left: -130,
+          child: Transform.translate(
+            offset: const Offset(-90, -90),
+            child: Container(
+              width: 800,
+              height: 420,
+              decoration: const BoxDecoration(
+                color: moradoSuave,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: -180,
+          left: -100,
+          child: Transform.translate(
+            offset: const Offset(-98, -98),
+            child: Container(
+              width: 400,
+              height: 390,
+              decoration: BoxDecoration(
+                color: moradoSuave.withValues(alpha: 0.7),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          height: 110,
+          decoration: BoxDecoration(color: moradoSuave.withValues(alpha: 0.4)),
+        ),
+        SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final escala = (constraints.maxHeight / 780).clamp(0.82, 1.0);
+              final altoDisponible = constraints.maxHeight - 80 - 48;
+              final altoTarjeta = (altoDisponible * 0.9).clamp(400.0, 450.0);
+
+              return Column(
+                children: [
+                  _encabezadoInicio(escala),
+                  Expanded(
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                          sliver: SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: _tarjetaInicio(escala, altoTarjeta),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                    child: Text(
+                      'Tu ubicación será enviada de forma automática,\n'
+                      'no se registran datos personales.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF6F5B7A),
+                        fontSize: 10.5,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _encabezadoInicio(double escala) {
+    const morado = Color(0xFF3C154E);
+    const violeta = Color(0xFF9B43C0);
+    final logo = 58 * escala;
+    final perfil = 44 * escala;
+
+    return SizedBox(
+      height: 80,
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: Row(
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              width: logo,
+              height: logo,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) =>
+                  Icon(Icons.shield_outlined, size: logo * 0.8, color: morado),
+            ),
+            SizedBox(width: 10 * escala),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ALERTA',
+                  style: TextStyle(
+                    color: morado,
+                    fontSize: 21 * escala,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w800,
+                    height: 0.98,
+                    letterSpacing: 0.7,
+                  ),
+                ),
+                Text(
+                  'VIOLETA',
+                  style: TextStyle(
+                    color: violeta,
+                    fontSize: 21 * escala,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w800,
+                    height: 0.98,
+                    letterSpacing: 0.7,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _abrirPerfil,
+                borderRadius: BorderRadius.circular(40),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 4,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: perfil + 4,
+                        height: perfil + 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.72),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: violeta.withValues(alpha: 0.75),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.person_outline_rounded,
+                          color: morado,
+                          size: perfil * 0.56,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Mi perfil',
+                        style: TextStyle(
+                          color: morado,
+                          fontSize: 10.5 * escala,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _tarjetaInicio(double escala, double altoTotal) {
+    const morado = Color(0xFF4E1A66);
+    const violeta = Color(0xFF9B43C0);
+    const rojo = Color(0xFFF21F3D);
+    final anchoSOS = 160 * escala;
+    final margenTarjeta = 20 + anchoSOS * 0.62;
+    final espacioSuperiorTarjeta = anchoSOS - (margenTarjeta - 20) + 26;
+    final altoTarjeta = altoTotal - margenTarjeta;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 410),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          Container(
+            height: altoTarjeta,
+            margin: EdgeInsets.only(top: margenTarjeta),
+            padding: EdgeInsets.fromLTRB(22, espacioSuperiorTarjeta, 22, 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: const Color(0x123C154E)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x1F3C154E),
+                  blurRadius: 28,
+                  offset: Offset(0, 12),
+                ),
+                BoxShadow(
+                  color: Color(0x0DFFFFFF),
+                  blurRadius: 2,
+                  offset: Offset(0, -1),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Estamos contigo',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: morado,
+                    fontSize: 17 * escala,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w700,
+                    height: 1.15,
+                  ),
+                ),
+                SizedBox(height: 6 * escala),
+                Text(
+                  'Tu alerta se envía de inmediato.\n'
+                  'Si no es una emergencia, puedes reportar lo ocurrido con más detalle.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF7A6A84),
+                    fontSize: 11 * escala,
+                    fontFamily: 'Poppins',
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 16 * escala),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 13,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F1FA),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFEADCF5)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.shield_outlined,
+                        color: violeta,
+                        size: 20 * escala,
+                      ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Text(
+                          'Tu reporte es confidencial y se comparte solo para atenderte.',
+                          style: TextStyle(
+                            color: const Color(0xFF6F5B7A),
+                            fontSize: 10 * escala,
+                            fontFamily: 'Poppins',
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 230),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: Material(
+                        color: const Color(0xFFEADCF5),
+                        borderRadius: BorderRadius.circular(14),
+                        child: InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ReportePage(
+                                alias: widget.alias,
+                                role: widget.role,
+                              ),
+                            ),
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.description_outlined,
+                                color: morado,
+                                size: 18 * escala,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Crear reporte detallado',
+                                style: TextStyle(
+                                  color: morado,
+                                  fontSize: 12.5 * escala,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 4 * escala),
+              ],
+            ),
+          ),
+          Positioned(top: 0, child: _botonSOS(anchoSOS, rojo: rojo)),
+        ],
+      ),
+    );
+  }
+
+  Widget _botonSOS(double tamano, {required Color rojo}) {
+    final halo = tamano + 36;
+
+    return SizedBox(
+      width: halo,
+      height: halo,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: halo,
+            height: halo,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  rojo.withValues(alpha: 0.38),
+                  rojo.withValues(alpha: 0.16),
+                  rojo.withValues(alpha: 0),
+                ],
+                stops: const [0.42, 0.68, 1],
+              ),
+            ),
+          ),
+          Container(
+            width: tamano,
+            height: tamano,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFFF5064), Color(0xFFE00D2D)],
+              ),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.55),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: rojo.withValues(alpha: 0.45),
+                  blurRadius: 30,
+                  spreadRadius: 5,
+                ),
+                BoxShadow(
+                  color: rojo.withValues(alpha: 0.22),
+                  blurRadius: 58,
+                  spreadRadius: 16,
+                ),
+                const BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 14,
+                  offset: Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: enviarAlertaSOS,
+                customBorder: const CircleBorder(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'SOS',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 31 * (tamano / 160),
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Alerta inmediata',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.5 * (tamano / 160),
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w500,
+                        height: 1.1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Color fondo = Color(0xFFF3EDF5);
     Color moradoSuave = Color(0xFFAB8FB8);
     Color moradoIconos = Color.fromARGB(255, 60, 21, 78);
-    Color rojoBoton = Color(0xFFE35D6A);
 
     return Scaffold(
       backgroundColor: fondo,
 
       body: widget.role == "administrador"
           ? _construirPanelAdmin()
-          : SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final escala = (constraints.maxHeight / 520).clamp(0.5, 1.0);
-                  return Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // CÍRCULO OSCURO
-                      Positioned(
-                        top: -290,
-                        left: -130,
-                        child: Transform.translate(
-                          offset: Offset(-90, -90),
-                          child: Container(
-                            width: 800,
-                            height: 420,
-                            decoration: BoxDecoration(
-                              color: moradoSuave,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // CÍRCULO CLARO
-                      Positioned(
-                        top: -180,
-                        left: -100,
-                        child: Transform.translate(
-                          offset: Offset(-98, -98),
-                          child: Container(
-                            width: 400,
-                            height: 390,
-                            decoration: BoxDecoration(
-                              color: moradoSuave.withOpacity(0.7),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // CONTENIDO
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // BARRA SUPERIOR
-                          Container(
-                            width: double.infinity,
-                            height: 130 * escala,
-                            padding: EdgeInsets.symmetric(horizontal: 18),
-
-                            decoration: BoxDecoration(
-                              color: moradoSuave.withOpacity(0.4),
-                            ),
-
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-
-                              children: [
-                                // TÍTULO
-                                Text(
-                                  "ALERTA VIOLETA",
-
-                                  style: TextStyle(
-                                    fontSize: 24 * escala,
-                                    fontFamily: 'Poppins',
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // LOGO
-                          Container(
-                            width: 90 * escala,
-                            height: 90 * escala,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                "assets/logo.png",
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(Icons.image, size: 18);
-                                },
-                              ),
-                            ),
-                          ),
-
-                          // TEXTO
-                          Text(
-                            "No estás sola, puedes reportar situaciones\n"
-                            "de acoso callejero de forma anónima y segura.\n"
-                            "Tu voz importa.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 11 * escala,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 1.5,
-                            ),
-                          ),
-
-                          // BOTÓN SOS
-                          if (widget.role == "usuario")
-                            SizedBox(
-                              width: 130 * escala,
-                              height: 130 * escala,
-                              child: Container(
-                                padding: EdgeInsets.all(8 * escala),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color(0xFFFFE1E6),
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    ///print("SOS DEL HOME FUNCIONANDO");///
-                                    enviarAlertaSOS();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: rojoBoton,
-                                    foregroundColor: Colors.white,
-                                    padding: EdgeInsets.zero,
-                                    elevation: 0,
-                                    shape: CircleBorder(),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.notifications_active_outlined,
-                                        size: 26 * escala,
-                                      ),
-                                      SizedBox(height: 2 * escala),
-                                      Text(
-                                        "SOS",
-                                        style: TextStyle(
-                                          fontSize: 25 * escala,
-                                          fontFamily: 'Poppins',
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      Text(
-                                        "Enviar alerta\ninmediata",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 9 * escala,
-                                          fontFamily: 'Poppins',
-                                          height: 1.1,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          // BOTÓN REPORTE
-                          if (widget.role == "usuario")
-                            SizedBox(
-                              width: 210 * escala,
-                              height: 38 * escala,
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ReportePage(
-                                        alias: widget.alias,
-                                        role: widget.role,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Color(0xFF8150A8),
-                                  side: BorderSide(
-                                    color: Color(0xFF8150A8),
-                                    width: 1.5,
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12 * escala,
-                                  ),
-                                  shape: StadiumBorder(),
-                                ),
-                                icon: Icon(
-                                  Icons.description_outlined,
-                                  size: 16 * escala,
-                                ),
-                                label: Text(
-                                  "Crear reporte detallado",
-                                  style: TextStyle(
-                                    fontSize: 10 * escala,
-                                    fontFamily: 'Poppins',
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          // TEXTO FINAL
-                          Center(
-                            child: Text(
-                              "Tu ubicación será enviada de forma automática,\n"
-                              "no se registran datos personales.",
-
-                              textAlign: TextAlign.center,
-
-                              style: TextStyle(
-                                fontSize: 11 * escala,
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
+          : _construirInicioUsuario(),
       //  BOTTOM NAVIGATION
       // BOTTOM NAVIGATION
       bottomNavigationBar: BottomNavigationBar(
@@ -1058,6 +1379,15 @@ class _HomePageState extends State<HomePage> {
                   );
                   break;
                 case 2:
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          MapaPage(alias: widget.alias, role: widget.role),
+                    ),
+                  );
+                  break;
+                case 3:
                   break;
               }
               break;
@@ -1101,6 +1431,10 @@ class _HomePageState extends State<HomePage> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.notifications),
                   label: "Notificaciones",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.location_on),
+                  label: "Mapa",
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.support_agent),

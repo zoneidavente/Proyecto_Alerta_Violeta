@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
+import 'app_session.dart';
 
 class AdministrarReportesPage extends StatefulWidget {
   final String alias;
@@ -207,7 +208,7 @@ class _AdministrarReportesPageState extends State<AdministrarReportesPage> {
     try {
       final respuesta = await http.put(
         apiUri('/${esAlerta ? 'emergencia' : 'reporte'}/$id/estado'),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppSession.authHeaders(json: true),
         body: jsonEncode({'estado': nuevoEstado}),
       );
       if (respuesta.statusCode != 200) {

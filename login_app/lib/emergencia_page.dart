@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'api_config.dart';
+import 'app_session.dart';
 
 class EmergenciaPage extends StatefulWidget {
   final String alias;
@@ -80,11 +81,9 @@ class _EmergenciaPageState extends State<EmergenciaPage> {
       var response = await http.post(
         apiUri('/emergencia'),
 
-        headers: {"Content-Type": "application/json"},
+        headers: AppSession.authHeaders(json: true),
 
         body: jsonEncode({
-          "alias": widget.alias,
-
           "latitud": latitud,
 
           "longitud": longitud,
