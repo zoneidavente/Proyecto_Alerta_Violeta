@@ -37,7 +37,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
     super.initState();
 
     timeago.setLocaleMessages('es', timeago.EsMessages());
-    notificaciones = notificationService.currentNotifications;
+    notificaciones = [];
     notificacionesSubscription = notificationService.notifications.listen((
       nuevasNotificaciones,
     ) {
@@ -46,7 +46,7 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
         notificaciones = nuevasNotificaciones;
       });
     });
-    unawaited(notificationService.start());
+    unawaited(notificationService.start(widget.alias));
   }
 
   @override
@@ -111,15 +111,18 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
     Color moradoSuave = Color(0xFFAB8FB8);
     Color moradoIconos = Color.fromARGB(255, 60, 21, 78);
 
+    final recientes = notificaciones
+        .where((item) => isWithinNotificationWindow(item))
+        .toList();
     List notificacionesFiltradas = [];
     if (filtroActual == "Todas") {
-      notificacionesFiltradas = notificaciones;
+      notificacionesFiltradas = recientes;
     } else if (filtroActual == "SOS") {
-      notificacionesFiltradas = notificaciones
+      notificacionesFiltradas = recientes
           .where((item) => item["categoria"] == "SOS")
           .toList();
     } else {
-      notificacionesFiltradas = notificaciones
+      notificacionesFiltradas = recientes
           .where((item) => item["categoria"] == "Reporte")
           .toList();
     }

@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const Reporte = require("../models/Reporte");
+const notificationDateFilter = require("../middleware/notificationDateFilter");
 
 
 // CREAR REPORTE
@@ -48,11 +49,11 @@ router.post("/reporte", async (req, res) => {
 
 
 // OBTENER REPORTES
-router.get("/reporte", async (req, res) => {
+router.get("/reporte", notificationDateFilter, async (req, res) => {
 
     try {
 
-        const reportes = await Reporte.find()
+        const reportes = await Reporte.find(req.notificationDateFilter)
             .sort({ fecha: -1 });
 
         res.json(reportes);

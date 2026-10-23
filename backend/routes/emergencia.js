@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const Emergencia = require("../models/Emergencia");
+const notificationDateFilter = require("../middleware/notificationDateFilter");
 
 // GUARDAR ALERTA SOS
 router.post("/emergencia", async(req,res)=>{
@@ -41,12 +42,12 @@ router.post("/emergencia", async(req,res)=>{
 
 
 // OBTENER ALERTAS
-router.get("/emergencia", async(req,res)=>{
+router.get("/emergencia", notificationDateFilter, async(req,res)=>{
 
     try{
 
         const alertas =
-            await Emergencia.find()
+            await Emergencia.find(req.notificationDateFilter)
             .sort({fecha:-1});
 
         res.json(alertas);

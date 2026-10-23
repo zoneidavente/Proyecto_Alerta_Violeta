@@ -198,6 +198,7 @@ router.post("/registrar", async (req, res) => {
             alias,
             password,
             recoveryCode,
+            createdAt: new Date(),
         });
 
         await user.save();

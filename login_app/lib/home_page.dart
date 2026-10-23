@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    unawaited(AppNotificationService.instance.start());
+    unawaited(AppNotificationService.instance.start(widget.alias));
     if (widget.role == "administrador") {
       cargarResumenAdmin();
     }
