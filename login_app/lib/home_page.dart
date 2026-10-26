@@ -1091,7 +1091,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _tarjetaInicio(double escala, double altoTotal) {
     const morado = Color(0xFF4E1A66);
-    const violeta = Color(0xFF9B43C0);
     const rojo = Color(0xFFF21F3D);
     final anchoSOS = 160 * escala;
     final margenTarjeta = 20 + anchoSOS * 0.62;
@@ -1150,25 +1149,13 @@ class _HomePageState extends State<HomePage> {
                     height: 1.4,
                   ),
                 ),
-                SizedBox(height: 16 * escala),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 13,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF7F1FA),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFEADCF5)),
-                  ),
-                ),
-                const Spacer(),
+                SizedBox(height: 56 * escala),
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 230),
                     child: SizedBox(
                       width: double.infinity,
-                      height: 44,
+                      height: 50,
                       child: Material(
                         color: const Color(0xFFEADCF5),
                         borderRadius: BorderRadius.circular(14),
