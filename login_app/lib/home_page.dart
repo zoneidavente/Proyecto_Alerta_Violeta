@@ -1161,27 +1161,6 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: const Color(0xFFEADCF5)),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.shield_outlined,
-                        color: violeta,
-                        size: 20 * escala,
-                      ),
-                      const SizedBox(width: 9),
-                      Expanded(
-                        child: Text(
-                          'Tu reporte es confidencial y se comparte solo para atenderte.',
-                          style: TextStyle(
-                            color: const Color(0xFF6F5B7A),
-                            fontSize: 10 * escala,
-                            fontFamily: 'Poppins',
-                            height: 1.35,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
                 const Spacer(),
                 Center(
